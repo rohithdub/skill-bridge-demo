@@ -47,7 +47,7 @@ const CATEGORIES: { id: 'All' | SchemeCategory; label: string; icon: any }[] = [
 const CASTE_OPTIONS = ['All', 'OBC', 'SC', 'ST', 'EWS', 'General'] as const;
 
 export const SchemesTab: React.FC = () => {
-  const { profile, updateProfileField, speakText, selectedLanguage } = useSkillBridge();
+  const { profile, careerGoal, updateProfileField, speakText, selectedLanguage } = useSkillBridge();
 
   const userCaste = profile.caste && profile.caste !== 'Prefer not to say' ? profile.caste : 'OBC';
   
@@ -507,8 +507,24 @@ export const SchemesTab: React.FC = () => {
                   </div>
                 )}
 
+                {/* Explainable Why This Scheme Is Shown */}
+                <div className="mt-2.5 bg-[#F6F8FC] rounded-xl p-2.5 border border-slate-200/60 text-[10.5px] space-y-1">
+                  <span className="font-bold text-slate-700 block uppercase text-[9px] tracking-wider">
+                    Why this scheme is shown:
+                  </span>
+                  <p className="text-slate-600 leading-tight">
+                    ✓ Matches {selectedCaste} beneficiary priority criteria
+                  </p>
+                  <p className="text-slate-600 leading-tight">
+                    ✓ Aligned with target trade: {careerGoal || profile.currentJob || 'Solar / Technical Skills'}
+                  </p>
+                  <p className="text-slate-500 text-[9.5px] italic pt-0.5">
+                    * Preliminary eligibility — verify on official portal
+                  </p>
+                </div>
+
                 {/* Quick Eligibility Badges */}
-                <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div className="mt-2.5 pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
                   <div className="flex items-center gap-2 text-slate-500 text-[11px]">
                     <span className="font-semibold text-slate-700">Income Limit:</span>
                     <span>{scheme.eligibility.maxFamilyIncome || 'None'}</span>

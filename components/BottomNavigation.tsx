@@ -3,25 +3,30 @@
 import React from 'react';
 import { useSkillBridge } from '@/context/SkillBridgeContext';
 import { MainAppTab } from '@/types/skillbridge';
-import { Mic, Route, Landmark, User } from 'lucide-react';
+import { Home, Route, Briefcase, Landmark, User } from 'lucide-react';
 
 export const BottomNavigation: React.FC = () => {
   const { activeTab, setActiveTab } = useSkillBridge();
 
   const navItems: { id: MainAppTab; label: string; icon: any }[] = [
     {
-      id: 'voice',
-      label: 'Voice Assistant',
-      icon: Mic
+      id: 'home',
+      label: 'Home',
+      icon: Home
     },
     {
       id: 'roadmap',
-      label: 'Skill Roadmap',
+      label: 'Roadmap',
       icon: Route
     },
     {
+      id: 'opportunities',
+      label: 'Opportunities',
+      icon: Briefcase
+    },
+    {
       id: 'schemes',
-      label: 'Schemes',
+      label: 'Benefits',
       icon: Landmark
     },
     {
@@ -33,7 +38,7 @@ export const BottomNavigation: React.FC = () => {
 
   return (
     <nav
-      className="w-full bg-white/95 backdrop-blur-md border-t border-slate-200/90 py-2 px-2 sm:px-4 flex items-center justify-between shadow-[0_-4px_20px_rgba(36,19,95,0.06)] shrink-0 z-40 select-none"
+      className="w-full bg-white/95 backdrop-blur-md border-t border-slate-200/90 py-2 px-1 sm:px-3 flex items-center justify-between shadow-[0_-4px_20px_rgba(36,19,95,0.06)] shrink-0 z-40 select-none"
       role="navigation"
       aria-label="Main navigation"
     >
@@ -54,20 +59,20 @@ export const BottomNavigation: React.FC = () => {
           >
             {/* Active Highlight Indicator Bar with Brand Gradient */}
             {isActive && (
-              <span className="absolute -top-2 w-8 sm:w-10 h-1 bg-gradient-to-r from-[#24135F] via-[#3159E8] via-[#13B8B2] to-[#62E6C8] rounded-full" />
+              <span className="absolute -top-2 w-7 sm:w-9 h-1 bg-gradient-to-r from-[#24135F] via-[#3159E8] via-[#13B8B2] to-[#62E6C8] rounded-full" />
             )}
 
             <div
-              className={`w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center transition-colors shrink-0 ${
+              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition-colors shrink-0 ${
                 isActive
                   ? 'bg-[#EEEAFE] text-[#3159E8] shadow-xs'
                   : 'bg-transparent text-slate-500'
               }`}
             >
-              <IconComponent className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
+              <IconComponent className={`w-4 h-4 sm:w-4.5 sm:h-4.5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
             </div>
 
-            <span className={`text-[9.5px] sm:text-[11px] mt-0.5 tracking-tight text-center leading-tight truncate max-w-full ${isActive ? 'text-[#24135F] font-bold' : ''}`}>
+            <span className={`text-[9px] sm:text-[10.5px] mt-0.5 tracking-tight text-center leading-tight truncate max-w-full ${isActive ? 'text-[#24135F] font-bold' : ''}`}>
               {item.label}
             </span>
           </button>

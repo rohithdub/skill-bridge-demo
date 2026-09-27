@@ -15,20 +15,25 @@ import {
   Volume2,
   RefreshCw,
   Briefcase,
-  Layers
+  Layers,
+  Store,
+  FileCheck,
+  CheckCircle2
 } from 'lucide-react';
 
 export const SkillRoadmap: React.FC = () => {
   const {
     roadmap,
     profile,
+    skillGap,
     setStage,
     toggleStepCompletion,
     speakText,
-    selectedLanguage
+    selectedLanguage,
+    setActiveTab
   } = useSkillBridge();
 
-  const [activeTabFilter, setActiveTabFilter] = useState<'journey' | 'transferable'>('journey');
+  const [activeTabFilter, setActiveTabFilter] = useState<'journey' | 'skillgap' | 'outcomes'>('journey');
 
   if (!roadmap) {
     return (
@@ -64,33 +69,21 @@ export const SkillRoadmap: React.FC = () => {
   };
 
   const handleReadSummary = () => {
-    let summaryText = `Roadmap from ${roadmap.currentJob} to ${roadmap.careerGoal}. ${roadmap.transferableInsight} Total duration is ${roadmap.estimatedTotalMonths}.`;
-    if (selectedLanguage === 'ta') {
-      summaryText = `${roadmap.currentJob} முதல் ${roadmap.careerGoal} வரையிலான உங்கள் தொழில் பாதை. ${roadmap.transferableInsight} மொத்த காலம் ${roadmap.estimatedTotalMonths}.`;
-    } else if (selectedLanguage === 'hi') {
-      summaryText = `${roadmap.currentJob} से ${roadmap.careerGoal} तक का आपका रोडमैप। ${roadmap.transferableInsight} कुल अवधि ${roadmap.estimatedTotalMonths} है।`;
-    } else if (selectedLanguage === 'te') {
-      summaryText = `${roadmap.currentJob} నుండి ${roadmap.careerGoal} వరకు మీ రోడ్‌మ్యాప్. ${roadmap.transferableInsight} మొత్తం వ్యవధి ${roadmap.estimatedTotalMonths}.`;
-    } else if (selectedLanguage === 'kn') {
-      summaryText = `${roadmap.currentJob} ಇಂದ ${roadmap.careerGoal} ವರೆಗಿನ ನಿಮ್ಮ ಮಾರ್ಗಸೂಚಿ. ${roadmap.transferableInsight} ಒಟ್ಟು ಅವಧಿ ${roadmap.estimatedTotalMonths}.`;
-    } else if (selectedLanguage === 'ml') {
-      summaryText = `${roadmap.currentJob} മുതൽ ${roadmap.careerGoal} വരെയുള്ള നിങ്ങളുടെ റോഡ്‌മാപ്പ്. ${roadmap.transferableInsight} ആകെ കാലാവധി ${roadmap.estimatedTotalMonths}.`;
-    }
+    const summaryText = `Roadmap from ${roadmap.currentJob} to ${roadmap.careerGoal}. Skill gap analysis shows ${skillGap.coveragePercent}% baseline strength. ${skillGap.explanation} Total duration is ${roadmap.estimatedTotalMonths}.`;
     speakText(summaryText, selectedLanguage);
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-[#F6F8FC] text-[#10152E] select-none pb-20 overflow-y-auto">
+    <div className="flex-1 flex flex-col bg-[#F6F8FC] text-[#10152E] select-none pb-24 overflow-y-auto">
       
       {/* Top Pathway Header Banner with Premium Dark Gradient */}
       <div className="bg-gradient-to-br from-[#10152E] via-[#24135F] to-[#10152E] text-white p-5 rounded-b-3xl shadow-lg relative overflow-hidden border-b border-[#3159E8]/30">
-        {/* Glow backdrop */}
         <div className="absolute top-0 right-0 w-48 h-48 bg-[#3159E8]/20 rounded-full blur-2xl pointer-events-none" />
 
         <div className="flex items-center justify-between text-xs text-[#62E6C8] font-semibold mb-2">
           <div className="flex items-center gap-1.5 bg-[#24135F] px-2.5 py-1 rounded-full border border-[#3159E8]/40 shadow-xs">
             <Sparkles className="w-3.5 h-3.5 text-[#62E6C8]" />
-            <span>AI Personalized Pathway</span>
+            <span>AI Skill Gap & Pathway Engine</span>
           </div>
 
           <button
@@ -106,7 +99,7 @@ export const SkillRoadmap: React.FC = () => {
         {/* Current Job -> Target Career Goal Bridge */}
         <div className="mt-2 flex items-center justify-between gap-2 min-w-0">
           <div className="flex-1 min-w-0">
-            <span className="text-[11px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">
               Current Work
             </span>
             <p className="text-sm font-bold text-slate-200 truncate">
@@ -118,13 +111,13 @@ export const SkillRoadmap: React.FC = () => {
             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#24135F] to-[#3159E8] border border-[#62E6C8]/40 flex items-center justify-center text-[#62E6C8] shadow-xs">
               <ArrowRight className="w-4 h-4 stroke-[3]" />
             </div>
-            <span className="text-[9px] font-black uppercase text-[#62E6C8] tracking-tighter mt-0.5">
-              Bridge
+            <span className="text-[8.5px] font-black uppercase text-[#62E6C8] tracking-tighter mt-0.5">
+              {skillGap.coveragePercent}% Ready
             </span>
           </div>
 
           <div className="flex-1 text-right min-w-0">
-            <span className="text-[11px] uppercase font-bold tracking-wider text-[#62E6C8] block mb-0.5">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-[#62E6C8] block mb-0.5">
               Target Goal
             </span>
             <p className="text-base font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-[#62E6C8] to-[#13B8B2] truncate">
@@ -133,7 +126,7 @@ export const SkillRoadmap: React.FC = () => {
           </div>
         </div>
 
-        {/* Earning & Duration Metrics Strip */}
+        {/* Metrics Strip */}
         <div className="mt-4 pt-3 border-t border-[#3159E8]/30 grid grid-cols-2 gap-2 text-xs">
           <div className="flex items-center gap-2 bg-[#10152E]/80 p-2 rounded-xl border border-[#3159E8]/30 min-w-0">
             <Clock className="w-4 h-4 text-[#62E6C8] shrink-0" />
@@ -146,7 +139,7 @@ export const SkillRoadmap: React.FC = () => {
           <div className="flex items-center gap-2 bg-[#10152E]/80 p-2 rounded-xl border border-[#3159E8]/30 min-w-0">
             <Award className="w-4 h-4 text-[#13B8B2] shrink-0" />
             <div className="min-w-0 flex-1">
-              <span className="text-[10px] text-slate-400 block">Income Growth</span>
+              <span className="text-[10px] text-slate-400 block">Income Potential</span>
               <span className="font-bold text-[#62E6C8] text-[11px] leading-tight block truncate">
                 {roadmap.potentialSalaryGrowth}
               </span>
@@ -154,7 +147,7 @@ export const SkillRoadmap: React.FC = () => {
           </div>
         </div>
 
-        {/* Progress & Voice Listen Audio Strip with Signature Gradient */}
+        {/* Progress & Audio Listen Strip */}
         <div className="mt-3.5 flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
             <div className="w-24 h-2 bg-[#10152E] rounded-full overflow-hidden border border-[#3159E8]/30">
@@ -178,66 +171,52 @@ export const SkillRoadmap: React.FC = () => {
         </div>
       </div>
 
-      {/* Section Tabs: Journey Milestones vs Transferable Skills Insight */}
-      <div className="px-5 pt-4 pb-2 flex gap-2">
+      {/* 3 Section Filter Tabs: Roadmap Path vs Skill Gap Engine vs Career Outcomes */}
+      <div className="px-4 pt-4 pb-2 flex gap-1.5">
         <button
           onClick={() => setActiveTabFilter('journey')}
-          className={`flex-1 py-2 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+          className={`flex-1 py-2 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1 cursor-pointer ${
             activeTabFilter === 'journey'
               ? 'bg-[#24135F] text-white shadow-sm border border-[#3159E8]'
               : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
           }`}
         >
           <Route className="w-3.5 h-3.5 text-[#3159E8]" />
-          <span>Roadmap Path</span>
+          <span>Roadmap</span>
         </button>
 
         <button
-          onClick={() => setActiveTabFilter('transferable')}
-          className={`flex-1 py-2 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-            activeTabFilter === 'transferable'
+          onClick={() => setActiveTabFilter('skillgap')}
+          className={`flex-1 py-2 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1 cursor-pointer ${
+            activeTabFilter === 'skillgap'
               ? 'bg-[#24135F] text-white shadow-sm border border-[#3159E8]'
               : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
           }`}
         >
-          <Layers className="w-3.5 h-3.5 text-[#13B8B2]" />
-          <span>Transferable Skills</span>
+          <Zap className="w-3.5 h-3.5 text-[#13B8B2]" />
+          <span>Skill Gap</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTabFilter('outcomes')}
+          className={`flex-1 py-2 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1 cursor-pointer ${
+            activeTabFilter === 'outcomes'
+              ? 'bg-[#24135F] text-white shadow-sm border border-[#3159E8]'
+              : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+          }`}
+        >
+          <Briefcase className="w-3.5 h-3.5 text-amber-500" />
+          <span>Outcomes</span>
         </button>
       </div>
 
-      {/* Main Roadmap Content */}
-      <div className="px-5 py-3 flex flex-col gap-4">
-        {/* Transferable Intelligence Banner with Growth / Lavender Gradient */}
-        <div className="bg-gradient-to-r from-[#E4FAF5] to-[#EEEAFE] border border-[#13B8B2]/30 rounded-2xl p-4 shadow-2xs">
-          <div className="flex items-center gap-2 text-xs font-extrabold text-[#24135F] mb-1.5">
-            <Zap className="w-4 h-4 text-[#13B8B2] fill-[#13B8B2]" />
-            <span>Cognitive Bridge Intelligence</span>
-          </div>
-
-          <p className="text-xs text-slate-700 leading-relaxed font-medium">
-            &ldquo;{roadmap.transferableInsight}&rdquo;
-          </p>
-
-          {/* Transferable Skills Chips */}
-          <div className="mt-3 pt-2.5 border-t border-[#13B8B2]/20 flex flex-col gap-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#24135F]">
-              Your Transferable Assets:
-            </span>
-            <div className="flex flex-wrap gap-1.5">
-              {roadmap.transferableSkills.map((ts, i) => (
-                <span
-                  key={i}
-                  className="px-2.5 py-1 bg-white text-[#24135F] border border-[#3159E8]/20 rounded-lg text-xs font-semibold shadow-2xs flex items-center gap-1 break-words max-w-full"
-                >
-                  <CheckCircle className="w-3 h-3 text-[#13B8B2] shrink-0" />
-                  <span className="break-words">{ts}</span>
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {activeTabFilter === 'journey' ? (
+      {/* Main Tab Content */}
+      <div className="px-4 py-3 flex flex-col gap-4">
+        
+        {/* ------------------------------------------------------------- */}
+        {/* TAB 1: 5-STAGE ROADMAP JOURNEY */}
+        {/* ------------------------------------------------------------- */}
+        {activeTabFilter === 'journey' && (
           <div className="flex flex-col gap-1">
             {/* Visual Start Milestone Node */}
             <div className="flex items-center gap-3.5 pl-1 mb-2">
@@ -277,59 +256,150 @@ export const SkillRoadmap: React.FC = () => {
                 <p className="text-[11px] text-slate-600 font-medium">
                   {profile.employmentPreference === 'Self-employment'
                     ? 'Autonomous Enterprise & Client Retainers'
-                    : 'Formal Wage Employment with Career Upward Mobility'}
+                    : 'Formal Wage Employment with Upward Mobility'}
                 </p>
               </div>
             </div>
 
-            {/* NSDC / Skill India Accreditation Footer Notice */}
-            <div className="mt-2 text-center text-[11px] text-slate-500 font-medium flex items-center justify-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-[#3159E8]" />
-              <span>Aligned with {roadmap.alignment}</span>
-            </div>
+            {/* Next Action Link */}
+            <button
+              onClick={() => setActiveTab('opportunities')}
+              className="mt-3 w-full py-2.5 rounded-2xl bg-gradient-to-r from-[#24135F] via-[#3159E8] to-[#13B8B2] text-white text-xs font-bold shadow-sm flex items-center justify-center gap-2"
+            >
+              <span>Explore Matched Training & Vacancies</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
-        ) : (
-          /* Transferable Skills Deep Dive View */
+        )}
+
+        {/* ------------------------------------------------------------- */}
+        {/* TAB 2: STRUCTURED SKILL GAP ENGINE (Feature 2) */}
+        {/* ------------------------------------------------------------- */}
+        {activeTabFilter === 'skillgap' && (
           <div className="flex flex-col gap-3">
-            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-              <h4 className="font-bold text-sm text-[#10152E] mb-2 flex items-center gap-1.5">
-                <CheckCircle className="w-4 h-4 text-[#13B8B2]" />
-                <span>Existing Foundation Strengths</span>
-              </h4>
-              <ul className="flex flex-col gap-2 text-xs text-slate-700">
-                {roadmap.transferableSkills.map((skill, idx) => (
-                  <li key={idx} className="flex items-start gap-2 bg-[#E4FAF5]/60 p-2.5 rounded-xl border border-[#13B8B2]/20">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#13B8B2] mt-1.5 shrink-0" />
-                    <div>
-                      <span className="font-bold text-[#10152E] block">{skill}</span>
-                      <span className="text-slate-500 text-[11px]">Transfers directly from your work in {roadmap.currentJob}</span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+            {/* Explainable Skill Gap Narrative Banner */}
+            <div className="bg-gradient-to-r from-[#E4FAF5] to-[#EEEAFE] border border-[#13B8B2]/30 rounded-2xl p-4 shadow-2xs space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-extrabold text-[#24135F]">
+                  <Zap className="w-4 h-4 text-[#13B8B2] fill-[#13B8B2]" />
+                  <span>Explainable Skill Gap Assessment</span>
+                </div>
+                <span className="text-[10px] font-bold bg-[#24135F] text-white px-2 py-0.5 rounded-full">
+                  {skillGap.coveragePercent}% Current Coverage
+                </span>
+              </div>
+
+              {/* Progress bar visual */}
+              <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-[#13B8B2] to-[#3159E8] rounded-full"
+                  style={{ width: `${skillGap.coveragePercent}%` }}
+                />
+              </div>
+
+              <p className="text-xs text-slate-700 leading-relaxed font-medium pt-1">
+                &ldquo;{skillGap.explanation}&rdquo;
+              </p>
             </div>
 
-            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-              <h4 className="font-bold text-sm text-[#10152E] mb-2 flex items-center gap-1.5">
-                <Zap className="w-4 h-4 text-[#3159E8]" />
-                <span>New High-Value Skills to Master</span>
+            {/* Transferable Skills (What you already have) */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-2">
+              <h4 className="font-bold text-xs text-[#10152E] uppercase tracking-wider flex items-center gap-1.5">
+                <CheckCircle className="w-4 h-4 text-emerald-600" />
+                <span>Transferable Skills You Already Have ({skillGap.transferableSkills.length})</span>
               </h4>
-              <ul className="flex flex-col gap-2 text-xs text-slate-700">
-                {roadmap.newSkillsToAcquire.map((skill, idx) => (
-                  <li key={idx} className="flex items-start gap-2 bg-[#EEEAFE]/60 p-2.5 rounded-xl border border-[#3159E8]/20">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#3159E8] mt-1.5 shrink-0" />
-                    <div>
-                      <span className="font-bold text-[#10152E] block">{skill}</span>
-                      <span className="text-slate-500 text-[11px]">Earns you industry grade accreditation and salary jump</span>
-                    </div>
-                  </li>
+              <div className="grid grid-cols-1 gap-1.5">
+                {skillGap.transferableSkills.map((ts, idx) => (
+                  <div key={idx} className="flex items-center gap-2 bg-emerald-50/70 p-2 rounded-xl border border-emerald-200 text-xs font-medium text-emerald-950">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0" />
+                    <span>{ts}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Missing Skills / Skill Gaps to Bridge */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-2">
+              <h4 className="font-bold text-xs text-[#10152E] uppercase tracking-wider flex items-center gap-1.5">
+                <Zap className="w-4 h-4 text-[#3159E8]" />
+                <span>Skill Gaps to Bridge in Training ({skillGap.skillGaps.length})</span>
+              </h4>
+              <div className="grid grid-cols-1 gap-1.5">
+                {skillGap.skillGaps.map((gap, idx) => (
+                  <div key={idx} className="flex items-center gap-2 bg-[#EEEAFE]/70 p-2 rounded-xl border border-[#3159E8]/20 text-xs font-medium text-[#24135F]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#3159E8] shrink-0" />
+                    <span>{gap}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Practical Tasks for Certification */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-2">
+              <h4 className="font-bold text-xs text-[#10152E] uppercase tracking-wider flex items-center gap-1.5">
+                <FileCheck className="w-4 h-4 text-slate-700" />
+                <span>Required Practical Certification Tasks</span>
+              </h4>
+              <ul className="text-xs text-slate-700 space-y-1.5 list-disc list-inside">
+                {skillGap.practicalTasks.map((task, idx) => (
+                  <li key={idx} className="leading-snug">{task}</li>
                 ))}
               </ul>
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
+                <span>Certification: {skillGap.certificationRequirement}</span>
+              </div>
             </div>
           </div>
         )}
-      </div>
 
+        {/* ------------------------------------------------------------- */}
+        {/* TAB 3: CAREER OUTCOMES (WAGE & ENTERPRISE) */}
+        {/* ------------------------------------------------------------- */}
+        {activeTabFilter === 'outcomes' && (
+          <div className="flex flex-col gap-3">
+            {/* Employment Options */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-2">
+              <h4 className="font-bold text-xs text-[#10152E] uppercase tracking-wider flex items-center gap-1.5">
+                <Briefcase className="w-4 h-4 text-[#3159E8]" />
+                <span>Wage Employment Opportunities</span>
+              </h4>
+              <div className="space-y-1.5">
+                {skillGap.employmentOptions.map((opt, idx) => (
+                  <div key={idx} className="p-2.5 rounded-xl bg-[#F6F8FC] border border-slate-200 text-xs font-semibold text-slate-800 flex items-center justify-between">
+                    <span>{opt}</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Enterprise Options */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-2">
+              <h4 className="font-bold text-xs text-[#10152E] uppercase tracking-wider flex items-center gap-1.5">
+                <Store className="w-4 h-4 text-amber-600" />
+                <span>Self-Employment & Micro-Enterprise Pathways</span>
+              </h4>
+              <div className="space-y-1.5">
+                {skillGap.enterpriseOptions.map((opt, idx) => (
+                  <div key={idx} className="p-2.5 rounded-xl bg-amber-50/60 border border-amber-200 text-xs font-semibold text-amber-950 flex items-center justify-between">
+                    <span>{opt}</span>
+                    <span className="text-[10px] text-amber-800 font-bold bg-amber-200 px-2 py-0.5 rounded">
+                      Grant Eligible
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <button
+              onClick={() => setActiveTab('opportunities')}
+              className="mt-2 w-full py-2.5 rounded-xl bg-[#24135F] text-white text-xs font-bold"
+            >
+              Open Opportunities & Grants Hub
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

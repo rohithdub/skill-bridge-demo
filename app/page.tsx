@@ -9,13 +9,18 @@ import { MobileNumberScreen } from '@/components/MobileNumberScreen';
 import { VoiceAssistantOnboarding } from '@/components/VoiceAssistantOnboarding';
 import { ProfileConfirmation } from '@/components/ProfileConfirmation';
 import { CareerGoalInput } from '@/components/CareerGoalInput';
+import { BeneficiaryHome } from '@/components/BeneficiaryHome';
 import { SkillRoadmap } from '@/components/SkillRoadmap';
+import { OpportunitiesTab } from '@/components/OpportunitiesTab';
 import { SchemesTab } from '@/components/SchemesTab';
 import { VoiceAssistantTab } from '@/components/VoiceAssistantTab';
 import { ProfileTab } from '@/components/ProfileTab';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { AdminLogin } from '@/components/AdminLogin';
 import { AdminDashboard } from '@/components/AdminDashboard';
+import { IVRSimulatorModal } from '@/components/IVRSimulatorModal';
+import { WhatsAppSimulatorModal } from '@/components/WhatsAppSimulatorModal';
+import { OfflineBanner } from '@/components/OfflineBanner';
 import { AnimatePresence, motion } from 'framer-motion';
 
 function AppContent() {
@@ -23,6 +28,13 @@ function AppContent() {
 
   return (
     <div className="flex-1 flex flex-col h-full relative overflow-hidden bg-slate-50">
+      {/* Offline Mode Banner (Low connectivity status) */}
+      <OfflineBanner />
+
+      {/* Multi-Channel Interactive Simulators */}
+      <IVRSimulatorModal />
+      <WhatsAppSimulatorModal />
+
       <AnimatePresence mode="wait">
         {/* SCREEN 1: SPLASH */}
         {stage === 'splash' && (
@@ -80,7 +92,7 @@ function AppContent() {
           </motion.div>
         )}
 
-        {/* SCREEN: ADMIN DASHBOARD (WHO IS IN THIS & STATUS/WHAT THEY ARE LEARNING) */}
+        {/* SCREEN: PM-AJAY ADMIN IMPLEMENTATION HUB */}
         {stage === 'admin_dashboard' && (
           <motion.div
             key="admin_dashboard"
@@ -136,7 +148,7 @@ function AppContent() {
           </motion.div>
         )}
 
-        {/* MAIN APP: ROADMAP / VOICE / PROFILE WITH 3-ICON BOTTOM NAVIGATION */}
+        {/* MAIN APP: 5 CORE TABS (HOME, ROADMAP, OPPORTUNITIES, BENEFITS, PROFILE) */}
         {(stage === 'main_app' || stage === 'roadmap') && (
           <motion.div
             key="main_app"
@@ -146,13 +158,15 @@ function AppContent() {
             className="flex-1 flex flex-col h-full overflow-hidden"
           >
             <div className="flex-1 flex flex-col overflow-hidden relative">
-              {activeTab === 'voice' && <VoiceAssistantTab />}
+              {activeTab === 'home' && <BeneficiaryHome />}
               {activeTab === 'roadmap' && <SkillRoadmap />}
+              {activeTab === 'opportunities' && <OpportunitiesTab />}
               {activeTab === 'schemes' && <SchemesTab />}
               {activeTab === 'profile' && <ProfileTab />}
+              {activeTab === 'voice' && <VoiceAssistantTab />}
             </div>
 
-            {/* Fixed Bottom Navigation with Schemes after Roadmap */}
+            {/* Fixed 5-Icon Bottom Navigation */}
             <BottomNavigation />
           </motion.div>
         )}

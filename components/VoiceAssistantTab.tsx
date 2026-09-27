@@ -25,6 +25,7 @@ export const VoiceAssistantTab: React.FC = () => {
     roadmap,
     careerGoal,
     setStage,
+    setActiveTab,
     speakText,
     isSpeaking,
     isListening,
@@ -48,11 +49,12 @@ export const VoiceAssistantTab: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const suggestedPrompts = [
+    'What is my next step?',
+    'Find jobs near me',
+    'Show training',
     'Schemes for my caste',
-    'What should I learn next?',
-    'Explain my roadmap',
-    'Find opportunities',
-    'Change my career goal'
+    'I want self employment',
+    'Explain my roadmap'
   ];
 
   useEffect(() => {
@@ -88,6 +90,21 @@ export const VoiceAssistantTab: React.FC = () => {
       ]);
 
       speakText(res.reply, selectedLanguage);
+
+      // Execute intent action navigation if present
+      if (res.intentAction) {
+        if (res.intentAction === 'NAV_HOME') {
+          setTimeout(() => setActiveTab('home'), 1500);
+        } else if (res.intentAction === 'NAV_ROADMAP') {
+          setTimeout(() => setActiveTab('roadmap'), 1500);
+        } else if (res.intentAction === 'NAV_OPPORTUNITIES' || res.intentAction === 'SHOW_TRAINING' || res.intentAction === 'OPEN_ENTERPRISE' || res.intentAction === 'SHOW_APPLICATIONS') {
+          setTimeout(() => setActiveTab('opportunities'), 1500);
+        } else if (res.intentAction === 'NAV_SCHEMES') {
+          setTimeout(() => setActiveTab('schemes'), 1500);
+        } else if (res.intentAction === 'NAV_PROFILE') {
+          setTimeout(() => setActiveTab('profile'), 1500);
+        }
+      }
     }, 900);
   };
 

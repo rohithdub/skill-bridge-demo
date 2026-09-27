@@ -452,16 +452,57 @@ export const DEMO_ROHITH_PROFILE: UserProfile = {
   districtCode: '32',
   name: 'Rohith Kumar',
   age: '19',
+  mobile: '9876543210',
+  state: 'Tamil Nadu',
+  district: 'Chennai',
+  block: 'Guindy SC Cluster',
+  preferredLanguage: 'en',
   currentJob: 'Electrical Assistant',
   familyJob: 'Farming',
   education: 'Diploma',
   familyIncome: '₹10,000 – ₹20,000',
-  caste: 'OBC',
+  caste: 'SC',
+  householdSituation: 'BPL Card Holder • Landless Household',
   skills: ['Electrical work', 'Technology'],
   physicalLimitation: {
     hasLimitation: false
   },
+  travelRadius: '15 km',
+  availableLearningTime: 'Full-time (6-8 hrs/day)',
+  deviceAccess: 'Smartphone',
+  internetAvailability: 'Good 4G/5G',
   employmentPreference: 'Wage employment'
 };
 
 export const DEMO_ROHITH_GOAL = 'Solar Technician';
+
+export const DEMO_ANANYA_PROFILE: UserProfile = {
+  serialId: 'WB-02-104',
+  stateCode: 'WB',
+  districtCode: '02',
+  name: 'Ananya Das',
+  age: '28',
+  mobile: '9830011223',
+  state: 'West Bengal',
+  district: 'Kolkata',
+  block: 'Tangra SC Artisan Ward',
+  preferredLanguage: 'bn',
+  currentJob: 'Tailor',
+  familyJob: 'Weaving',
+  education: '12th',
+  familyIncome: 'Below ₹10,000',
+  caste: 'SC',
+  householdSituation: 'SC Traditional Artisan Family • Rural Migrant',
+  skills: ['Tailoring', 'Design'],
+  physicalLimitation: {
+    hasLimitation: false
+  },
+  travelRadius: '15 km',
+  availableLearningTime: 'Part-time (2-4 hrs/day)',
+  deviceAccess: 'Smartphone',
+  internetAvailability: 'Good 4G/5G',
+  employmentPreference: 'Self-employment'
+};
+
+export const DEMO_ANANYA_GOAL = 'Fashion Entrepreneur';
+

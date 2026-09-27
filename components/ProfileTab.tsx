@@ -3,20 +3,23 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSkillBridge } from '@/context/SkillBridgeContext';
-import { UserProfile } from '@/types/skillbridge';
+import { UserProfile, EmploymentPreference } from '@/types/skillbridge';
 import {
   User,
   Briefcase,
   GraduationCap,
   Users,
-  IndianRupee,
-  Wrench,
-  ShieldAlert,
+  MapPin,
+  Clock,
+  ShieldCheck,
   Edit3,
   Compass,
   Sparkles,
   Share2,
-  X
+  X,
+  Smartphone,
+  Wifi,
+  Accessibility
 } from 'lucide-react';
 
 export const ProfileTab: React.FC = () => {
@@ -47,7 +50,7 @@ export const ProfileTab: React.FC = () => {
 
   const handleShareProfile = () => {
     navigator.clipboard?.writeText(
-      `Skill Bridge Profile: ${profile.name}, Age ${profile.age}. Current: ${profile.currentJob} -> Target: ${careerGoal || 'Skill Growth'}. Generated via Skill Bridge AI.`
+      `Skill Bridge PM-AJAY Dossier: ${profile.name || 'Candidate'}, Serial ID: ${profile.serialId || 'TN-32-101'}. District: ${profile.district || 'Chennai'}. Goal: ${careerGoal || 'Solar PV Specialist'}.`
     );
     setCopyToast(true);
     setTimeout(() => setCopyToast(false), 2500);
@@ -124,11 +127,11 @@ export const ProfileTab: React.FC = () => {
       {/* Profile Details Sections */}
       <div className="p-4 flex flex-col gap-4">
         
-        {/* 1. PERSONAL */}
+        {/* 1. PERSONAL & LOCATION */}
         <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs">
           <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
             <User className="w-3.5 h-3.5 text-[#3159E8]" />
-            Personal
+            Identity & Location
           </h3>
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div className="min-w-0">
@@ -136,293 +139,255 @@ export const ProfileTab: React.FC = () => {
               <span className="font-bold text-[#10152E] text-sm break-words">{profile.name || 'Candidate'}</span>
             </div>
             <div className="min-w-0">
-              <span className="text-slate-400 block text-[11px]">Age</span>
-              <span className="font-bold text-[#10152E] text-sm break-words">{profile.age || '19'} years</span>
+              <span className="text-slate-400 block text-[11px]">Mobile Number</span>
+              <span className="font-bold text-[#10152E] text-sm font-mono">+91 {profile.mobile || '9876543210'}</span>
+            </div>
+            <div className="min-w-0">
+              <span className="text-slate-400 block text-[11px]">District & State</span>
+              <span className="font-bold text-[#10152E] text-sm flex items-center gap-1">
+                <MapPin className="w-3 h-3 text-[#3159E8]" />
+                <span>{profile.district || 'Chennai'}, {profile.state || 'Tamil Nadu'}</span>
+              </span>
+            </div>
+            <div className="min-w-0">
+              <span className="text-slate-400 block text-[11px]">Travel Radius</span>
+              <span className="font-bold text-emerald-700 text-sm bg-emerald-50 px-2 py-0.5 rounded-md inline-block">
+                {profile.travelRadius || '15 km'}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* 2. WORK */}
+        {/* 2. WORK & ASPIRATION */}
         <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs">
           <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
             <Briefcase className="w-3.5 h-3.5 text-[#3159E8]" />
-            Work
+            Livelihood & Aspiration
           </h3>
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div>
-              <span className="text-slate-400 block text-[11px]">Current Occupation</span>
+              <span className="text-slate-400 block text-[11px]">Current Work</span>
               <span className="font-bold text-[#10152E] text-sm">{profile.currentJob || 'Electrical Assistant'}</span>
             </div>
             <div>
               <span className="text-slate-400 block text-[11px]">Employment Mode</span>
               <span className="font-bold text-[#10152E] text-sm">{profile.employmentPreference || 'Wage employment'}</span>
             </div>
+            <div>
+              <span className="text-slate-400 block text-[11px]">Target Career Goal</span>
+              <span className="font-bold text-[#3159E8] text-sm">{careerGoal || 'Solar PV Specialist'}</span>
+            </div>
+            <div>
+              <span className="text-slate-400 block text-[11px]">Daily Time Available</span>
+              <span className="font-bold text-[#10152E] text-sm">{profile.availableLearningTime || 'Full-time (6-8 hrs/day)'}</span>
+            </div>
           </div>
         </div>
 
-        {/* 3. EDUCATION */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs">
-          <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-            <GraduationCap className="w-3.5 h-3.5 text-[#3159E8]" />
-            Education
-          </h3>
-          <div className="text-xs">
-            <span className="text-slate-400 block text-[11px]">Highest Level</span>
-            <span className="font-bold text-[#10152E] text-sm">{profile.education || 'Diploma'}</span>
-          </div>
-        </div>
-
-        {/* 4. FAMILY & COMMUNITY */}
+        {/* 3. SOCIOECONOMIC & SCHEME ELIGIBILITY */}
         <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs">
           <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
             <Users className="w-3.5 h-3.5 text-[#3159E8]" />
-            Family & Community
+            Socioeconomic & Welfare Classification
           </h3>
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div>
-              <span className="text-slate-400 block text-[11px]">Traditional Occupation</span>
-              <span className="font-bold text-[#10152E] text-sm">{profile.familyJob || 'Farming'}</span>
+              <span className="text-slate-400 block text-[11px]">Social Category</span>
+              <span className="font-bold text-white text-xs px-2.5 py-0.5 bg-[#24135F] border border-[#62E6C8]/40 rounded-full inline-block mt-0.5">
+                {profile.caste || 'SC'} (PM-AJAY Focus)
+              </span>
             </div>
             <div>
-              <span className="text-slate-400 block text-[11px]">Monthly Income Range</span>
+              <span className="text-slate-400 block text-[11px]">Monthly Family Income</span>
               <span className="font-bold text-[#10152E] text-sm">{profile.familyIncome || '₹10,000 – ₹20,000'}</span>
             </div>
-            <div className="col-span-2 pt-2 border-t border-slate-100 flex items-center justify-between">
-              <span className="text-slate-400 text-[11px]">Caste / Social Category</span>
-              <span className="font-bold text-[#13B8B2] text-xs px-2.5 py-0.5 bg-[#E4FAF5] border border-[#13B8B2]/30 rounded-full">
-                {profile.caste || 'OBC'}
+            <div className="col-span-2 pt-2 border-t border-slate-100">
+              <span className="text-slate-400 text-[11px] block">Household Situation</span>
+              <span className="font-semibold text-slate-800 text-xs">
+                {profile.householdSituation || 'BPL Card Holder • Landless Household'}
               </span>
             </div>
           </div>
         </div>
 
-        {/* 5. SKILLS & INTERESTS */}
+        {/* 4. CONSTRAINTS & ACCESSIBILITY */}
         <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs">
           <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-            <Wrench className="w-3.5 h-3.5 text-[#3159E8]" />
-            Skills & Interests
+            <Accessibility className="w-3.5 h-3.5 text-[#3159E8]" />
+            Inclusion & Constraints
           </h3>
-          <div className="flex flex-wrap gap-1.5">
-            {(profile.skills && profile.skills.length > 0
-              ? profile.skills
-              : ['Electrical work', 'Technology']
-            ).map((skill) => (
-              <span
-                key={skill}
-                className="px-2.5 py-1 bg-[#EEEAFE] text-[#24135F] border border-[#3159E8]/20 rounded-lg text-xs font-semibold"
-              >
-                {skill}
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <div>
+              <span className="text-slate-400 block text-[11px]">Physical Limitation</span>
+              <span className="font-semibold text-slate-800 text-xs">
+                {profile.physicalLimitation?.hasLimitation ? 'Yes (Special support active)' : 'None declared'}
               </span>
-            ))}
+            </div>
+            <div>
+              <span className="text-slate-400 block text-[11px]">Primary Device</span>
+              <span className="font-semibold text-slate-800 text-xs flex items-center gap-1">
+                <Smartphone className="w-3 h-3 text-slate-600" />
+                <span>{profile.deviceAccess || 'Smartphone'}</span>
+              </span>
+            </div>
+            <div className="col-span-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-slate-400 text-[11px]">Internet Availability:</span>
+              <span className="font-bold text-slate-800 text-xs flex items-center gap-1">
+                <Wifi className="w-3 h-3 text-emerald-600" />
+                <span>{profile.internetAvailability || 'Good 4G/5G'}</span>
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* 6. ACCESSIBILITY & LIMITATIONS */}
+        {/* 5. SKILLS */}
         <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs">
           <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-            <ShieldAlert className="w-3.5 h-3.5 text-[#3159E8]" />
-            Accessibility & Limitations
+            <Sparkles className="w-3.5 h-3.5 text-[#3159E8]" />
+            Declared Existing Skills
           </h3>
-          <p className="text-xs font-bold text-[#10152E]">
-            {profile.physicalLimitation?.hasLimitation
-              ? profile.physicalLimitation.details || 'Accommodations requested'
-              : 'None reported (All physical career tracks enabled)'}
-          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {profile.skills && profile.skills.length > 0 ? (
+              profile.skills.map((s, idx) => (
+                <span
+                  key={idx}
+                  className="px-2.5 py-1 bg-slate-100 text-slate-800 text-xs font-semibold rounded-lg border border-slate-200"
+                >
+                  {s}
+                </span>
+              ))
+            ) : (
+              <span className="text-slate-400 text-xs italic">No skills listed yet</span>
+            )}
+          </div>
         </div>
-
-        {/* 7. CAREER GOAL */}
-        <div className="bg-gradient-to-r from-[#E4FAF5] to-[#EEEAFE] rounded-2xl p-4 border border-[#13B8B2]/40 shadow-2xs">
-          <h3 className="text-xs font-extrabold text-[#24135F] uppercase tracking-wider mb-2 flex items-center gap-1.5">
-            <Compass className="w-3.5 h-3.5 text-[#3159E8]" />
-            Future Job Goal
-          </h3>
-          <p className="text-base font-extrabold text-[#10152E]">
-            {careerGoal || 'Solar Technician'}
-          </p>
-          <span className="text-[11px] text-[#13B8B2] font-semibold block mt-0.5">
-            Cognitive Bridge Active in Skill Roadmap Tab
-          </span>
-        </div>
-
-        {/* SIH Judge Demo Preset Actions */}
-        <div className="pt-2 flex flex-col gap-2">
-          <button
-            onClick={loadDemoProfile}
-            className="w-full py-3 px-4 rounded-xl bg-[#EEEAFE] hover:bg-[#EEEAFE]/80 text-[#24135F] font-bold text-xs flex items-center justify-center gap-2 border border-[#3159E8]/30 transition-colors cursor-pointer"
-          >
-            <Sparkles className="w-4 h-4 text-[#3159E8]" />
-            <span>Reload Sample Demo Profile</span>
-          </button>
-
-          <button
-            onClick={resetAll}
-            className="w-full py-2.5 px-4 rounded-xl text-slate-400 hover:text-rose-500 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-          >
-            Reset All State
-          </button>
-        </div>
-
       </div>
 
-      {/* Edit Profile Modal */}
+      {/* EDIT MODAL */}
       <AnimatePresence>
         {isEditing && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-[#10152E]/70 backdrop-blur-xs z-50 flex items-end justify-center"
-          >
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
             <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="w-full max-w-md bg-white rounded-t-3xl max-h-[85vh] overflow-y-auto p-6 flex flex-col gap-4 shadow-2xl"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-3 max-h-[85vh] overflow-y-auto"
             >
-              <div className="flex items-center justify-between border-b pb-3">
-                <h3 className="font-extrabold text-[#10152E] text-lg">Edit Profile</h3>
+              <div className="flex items-center justify-between border-b pb-2">
+                <h3 className="text-sm font-extrabold text-slate-900">Edit Citizen Profile</h3>
                 <button
                   onClick={() => setIsEditing(false)}
-                  className="p-1 rounded-full text-slate-400 hover:text-slate-600"
+                  className="text-slate-400 hover:text-slate-600 font-bold"
                 >
-                  <X className="w-5 h-5" />
+                  ✕
                 </button>
               </div>
 
-              {/* Form Fields */}
-              <div className="flex flex-col gap-3 text-xs">
+              <div className="space-y-2.5 text-xs">
                 <div>
-                  <label className="font-bold text-[#10152E] block mb-1">Name</label>
+                  <label className="text-[11px] font-bold text-slate-600 block">Name:</label>
                   <input
                     type="text"
                     value={editFormData.name}
                     onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-[#10152E] focus:outline-none focus:ring-2 focus:ring-[#3159E8]"
+                    className="w-full p-2 rounded-xl border border-slate-300 font-semibold"
                   />
                 </div>
 
-                <div>
-                  <label className="font-bold text-[#10152E] block mb-1">Age</label>
-                  <input
-                    type="number"
-                    value={editFormData.age}
-                    onChange={(e) => setEditFormData({ ...editFormData, age: e.target.value })}
-                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-[#10152E] focus:outline-none focus:ring-2 focus:ring-[#3159E8]"
-                  />
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-600 block">District:</label>
+                    <input
+                      type="text"
+                      value={editFormData.district || 'Chennai'}
+                      onChange={(e) => setEditFormData({ ...editFormData, district: e.target.value })}
+                      className="w-full p-2 rounded-xl border border-slate-300 font-semibold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-600 block">Travel Radius:</label>
+                    <select
+                      value={editFormData.travelRadius || '15 km'}
+                      onChange={(e) => setEditFormData({ ...editFormData, travelRadius: e.target.value as any })}
+                      className="w-full p-2 rounded-xl border border-slate-300 font-semibold"
+                    >
+                      <option value="5 km">5 km</option>
+                      <option value="15 km">15 km</option>
+                      <option value="30 km">30 km</option>
+                      <option value="Any distance">Any distance</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div>
-                  <label className="font-bold text-[#10152E] block mb-1">Current Job</label>
+                  <label className="text-[11px] font-bold text-slate-600 block">Current Work:</label>
                   <input
                     type="text"
                     value={editFormData.currentJob}
                     onChange={(e) => setEditFormData({ ...editFormData, currentJob: e.target.value })}
-                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-[#10152E] focus:outline-none focus:ring-2 focus:ring-[#3159E8]"
+                    className="w-full p-2 rounded-xl border border-slate-300 font-semibold"
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-[#10152E] block mb-1">Education</label>
-                  <input
-                    type="text"
-                    value={editFormData.education}
-                    onChange={(e) => setEditFormData({ ...editFormData, education: e.target.value })}
-                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-[#10152E] focus:outline-none focus:ring-2 focus:ring-[#3159E8]"
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold text-[#10152E] block mb-1">Family Job</label>
-                  <input
-                    type="text"
-                    value={editFormData.familyJob}
-                    onChange={(e) => setEditFormData({ ...editFormData, familyJob: e.target.value })}
-                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-[#10152E] focus:outline-none focus:ring-2 focus:ring-[#3159E8]"
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold text-[#10152E] block mb-1">Monthly Income</label>
-                  <input
-                    type="text"
-                    value={editFormData.familyIncome}
-                    onChange={(e) => setEditFormData({ ...editFormData, familyIncome: e.target.value })}
-                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-[#10152E] focus:outline-none focus:ring-2 focus:ring-[#3159E8]"
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold text-[#10152E] block mb-1">Caste / Category</label>
-                  <select
-                    value={editFormData.caste || 'OBC'}
-                    onChange={(e) => setEditFormData({ ...editFormData, caste: e.target.value })}
-                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-[#10152E] bg-white focus:outline-none focus:ring-2 focus:ring-[#3159E8]"
-                  >
-                    <option value="General">General</option>
-                    <option value="OBC">OBC</option>
-                    <option value="SC">SC</option>
-                    <option value="ST">ST</option>
-                    <option value="EWS">EWS</option>
-                    <option value="Prefer not to say">Prefer not to say</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="font-bold text-[#10152E] block mb-1">Skills (comma separated)</label>
-                  <input
-                    type="text"
-                    value={editFormData.skills.join(', ')}
-                    onChange={(e) =>
-                      setEditFormData({
-                        ...editFormData,
-                        skills: e.target.value.split(',').map((s) => s.trim()).filter(Boolean)
-                      })
-                    }
-                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-[#10152E] focus:outline-none focus:ring-2 focus:ring-[#3159E8]"
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold text-[#10152E] block mb-1">Employment Preference</label>
+                  <label className="text-[11px] font-bold text-slate-600 block">Employment Preference:</label>
                   <select
                     value={editFormData.employmentPreference}
-                    onChange={(e) =>
-                      setEditFormData({
-                        ...editFormData,
-                        employmentPreference: e.target.value as any
-                      })
-                    }
-                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-[#10152E] bg-white focus:outline-none focus:ring-2 focus:ring-[#3159E8]"
+                    onChange={(e) => setEditFormData({ ...editFormData, employmentPreference: e.target.value as EmploymentPreference })}
+                    className="w-full p-2 rounded-xl border border-slate-300 font-semibold"
                   >
-                    <option value="Self-employment">Self-employment</option>
                     <option value="Wage employment">Wage employment</option>
+                    <option value="Self-employment">Self-employment</option>
                     <option value="Both">Both</option>
                     <option value="Not sure">Not sure</option>
                   </select>
                 </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-slate-600 block">Social Category:</label>
+                  <select
+                    value={editFormData.caste}
+                    onChange={(e) => setEditFormData({ ...editFormData, caste: e.target.value })}
+                    className="w-full p-2 rounded-xl border border-slate-300 font-semibold"
+                  >
+                    <option value="SC">SC (Scheduled Caste - PM-AJAY Focus)</option>
+                    <option value="OBC">OBC</option>
+                    <option value="ST">ST</option>
+                    <option value="General">General</option>
+                    <option value="EWS">EWS</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-slate-600 block">Household Situation:</label>
+                  <input
+                    type="text"
+                    value={editFormData.householdSituation || 'BPL Card Holder • Landless Household'}
+                    onChange={(e) => setEditFormData({ ...editFormData, householdSituation: e.target.value })}
+                    className="w-full p-2 rounded-xl border border-slate-300 font-semibold"
+                  />
+                </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-2 pt-2">
+              <div className="flex gap-2 pt-2 border-t">
                 <button
                   onClick={() => setIsEditing(false)}
-                  className="flex-1 py-3 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs"
+                  className="flex-1 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveEdit}
-                  className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#24135F] via-[#3159E8] to-[#13B8B2] text-white font-bold text-xs shadow-md"
+                  className="flex-1 py-2 rounded-xl bg-[#3159E8] text-white text-xs font-bold shadow-md hover:bg-[#24135F]"
                 >
-                  Save Profile
+                  Save Changes
                 </button>
               </div>
             </motion.div>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
-
     </div>
   );
 };
