@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import https from 'https';
 
+export const dynamic = 'force-static';
+
 // In-memory cache for synthesized audio buffers (max 150 items)
 const audioCache = new Map<string, Buffer>();
 const MAX_CACHE_SIZE = 150;
