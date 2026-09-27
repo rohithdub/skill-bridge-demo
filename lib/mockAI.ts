@@ -1,4 +1,4 @@
-import { GeneratedRoadmap, RoadmapStep, UserProfile } from '@/types/skillbridge';
+import { GeneratedRoadmap, RoadmapStep, UserProfile, SupportedLanguage } from '@/types/skillbridge';
 import { PREDEFINED_PATHWAYS, PredefinedPathway } from './roadmapData';
 
 /**
@@ -197,63 +197,103 @@ export class MockAIService {
   public static simulateVoiceResponse(
     query: string,
     profile?: UserProfile,
-    roadmap?: GeneratedRoadmap
+    roadmap?: GeneratedRoadmap,
+    lang: SupportedLanguage = 'en'
   ): { reply: string; suggestions?: string[] } {
     const q = query.toLowerCase();
+    const name = profile?.name ? profile.name.split(' ')[0] : (
+      lang === 'ta' ? 'நண்பரே' :
+      lang === 'hi' ? 'दोस्त' :
+      lang === 'te' ? 'స్నేహితుడా' :
+      lang === 'kn' ? 'ಸ್ನೇಹಿತರೆ' :
+      lang === 'ml' ? 'സുഹൃത്തേ' : 'friend'
+    );
+    const goal = roadmap?.careerGoal || profile?.currentJob || 'Career';
 
-    if (q.includes('explain') || q.includes('roadmap') || q.includes('path')) {
+    // 1. Roadmap & Path queries
+    if (q.includes('explain') || q.includes('roadmap') || q.includes('path') || q.includes('விளக்கு') || q.includes('समझा') || q.includes('వివరించు') || q.includes('ವಿವರಿಸಿ') || q.includes('വിശദീകരിക്കുക')) {
       if (roadmap) {
+        const step1Title = roadmap.steps[0]?.title || 'Step 1';
+        const replies: Partial<Record<SupportedLanguage, string>> = {
+          en: `You are on the path to ${roadmap.careerGoal}. Your roadmap has ${roadmap.steps.length} focused steps over ${roadmap.estimatedTotalMonths}. Step 1 is "${step1Title}".`,
+          ta: `நீங்கள் ${roadmap.careerGoal} இலக்கை நோக்கி செல்கிறீர்கள். உங்கள் வழிகாட்டி ${roadmap.estimatedTotalMonths} காலத்தில் ${roadmap.steps.length} படிகளைக் கொண்டுள்ளது. முதல் படி "${step1Title}".`,
+          hi: `आप ${roadmap.careerGoal} के पथ पर हैं। आपके रोडमैप में ${roadmap.estimatedTotalMonths} में ${roadmap.steps.length} चरण हैं। पहला कदम "${step1Title}" है।`,
+          te: `మీరు ${roadmap.careerGoal} వైపు ప్రయాణిస్తున్నారు. మీ రోడ్‌మ్యాప్‌లో ${roadmap.estimatedTotalMonths} లో ${roadmap.steps.length} దశలు ఉన్నాయి. మొదటి దశ "${step1Title}".`,
+          kn: `ನೀವು ${roadmap.careerGoal} ಕಡೆಗೆ ಮುನ್ನಡೆಯುತ್ತಿದ್ದೀರಿ. ನಿಮ್ಮ ಮಾರ್ಗಸೂಚಿಯು ${roadmap.estimatedTotalMonths} ನಲ್ಲಿ ${roadmap.steps.length} ಹಂತಗಳನ್ನು ಹೊಂದಿದೆ. ಮೊದಲ ಹಂತ "${step1Title}".`,
+          ml: `നിങ്ങൾ ${roadmap.careerGoal} ലക്ഷ്യത്തിലേക്കുള്ള പാതയിലാണ്. നിങ്ങളുടെ റോഡ്‌മാപ്പിൽ ${roadmap.estimatedTotalMonths} ൽ ${roadmap.steps.length} ഘട്ടങ്ങളുണ്ട്. ആദ്യ ഘട്ടം "${step1Title}".`
+        };
         return {
-          reply: `You are on the path from ${roadmap.currentJob} to ${roadmap.careerGoal}. Your roadmap has ${roadmap.steps.length} focused steps over ${roadmap.estimatedTotalMonths}. Step 1 is "${roadmap.steps[0]?.title}". Would you like me to read the key skills for Step 1?`,
+          reply: replies[lang] || replies.en || '',
           suggestions: ['What should I learn next?', 'Show free government schemes', 'Change my career goal']
         };
       }
+    }
+
+    // 2. Schemes & Community benefits queries
+    if (q.includes('scheme') || q.includes('caste') || q.includes('community') || q.includes('loan') || q.includes('scholarship') || q.includes('subsidy') || q.includes('toolkit') || q.includes('திட்டம்') || q.includes('योजना')) {
+      const caste = profile?.caste || 'OBC';
+      const replies: Partial<Record<SupportedLanguage, string>> = {
+        en: `For your ${caste} category, you qualify for high-impact schemes including PM Vishwakarma (₹15,000 free toolkit + 5% loan), NBCFDC/NSFDC skilling grants, and PM Surya Ghar certification. Check out the Schemes tab right after Roadmap!`,
+        ta: `உங்கள் ${caste} பிரிவுக்கு, PM விஸ்வகர்மா (₹15,000 இலவச கருவித்தொகுப்பு + 5% கடன்), திறன் மானியங்கள் மற்றும் PM சூர்ய கர் இலவச சான்றிதழ் திட்டங்கள் தகுதிபெறுகின்றன. ரோட்மேப்பிற்கு அடுத்துள்ள Schemes பகுதியில் பாருங்கள்!`,
+        hi: `आपकी ${caste} श्रेणी के लिए, आप पीएम विश्वकर्मा (₹15,000 फ्री टूलकिट + 5% ऋण), NBCFDC/NSFDC कौशल अनुदान और पीएम सूर्य घर योजनाओं के लिए पात्र हैं। रोडमैप के बाद स्कीम्स टैब देखें!`,
+        te: `మీ ${caste} కేటగిరీకి, మీరు PM విశ్వకర్మ (₹15,000 ఉచిత టూల్‌కిట్ + 5% రుణం) మరియు PM సూర్య ఘర్ పథకాలకు అర్హులు. రోడ్‌మ్యాప్ తర్వాత స్కీమ్స్ ట్యాబ్‌ను చూడండి!`,
+        kn: `ನಿಮ್ಮ ${caste} ವರ್ಗಕ್ಕೆ, ನೀವು PM ವಿಶ್ವಕರ್ಮ (₹15,000 ಉಚಿತ ಟೂಲ್‌ಕಿಟ್ + 5% ಸಾಲ) ಮತ್ತು PM ಸೂರ್ಯ ಘರ್ ಯೋಜನೆಗಳಿಗೆ ಅರ್ಹರಾಗಿದ್ದೀರಿ. ರೋಡ್‌ಮ್ಯಾಪ್ ನಂತರ ಸ್ಕೀಮ್ಸ್ ಟ್ಯಾಬ್ ನೋಡಿ!`,
+        ml: `നിങ്ങളുടെ ${caste} വിഭാഗത്തിനായി, പിഎം വിശ്വകർമ (₹15,000 സൗജന്യ ടൂൾകിಟ್ + 5% വായ്പ), പിഎം സൂര്യ ഘർ പദ്ധതികൾ എന്നിവ ലഭ്യമാണ്. റോഡ്‌മാപ്പിന് ശേഷമുള്ള സ്കീംസ് ടാബ് കാണുക!`
+      };
       return {
-        reply: "Your roadmap connects your current experience to your dream role. You can view all your steps in the Skill Roadmap tab.",
-        suggestions: ['What should I learn next?', 'Find a skill for me']
+        reply: replies[lang] || replies.en || '',
+        suggestions: ['Show eligible schemes', 'What should I learn next?', 'Explain my roadmap']
       };
     }
 
-    if (q.includes('next') || q.includes('learn next') || q.includes('what to do')) {
+    // 3. Next steps queries
+    if (q.includes('next') || q.includes('learn') || q.includes('அடுத்து') || q.includes('अगला') || q.includes('తరువాత') || q.includes('ಮುಂದೆ') || q.includes('അടുത്തത്')) {
       const nextStep = roadmap?.steps.find(s => !s.isCompleted) || roadmap?.steps[0];
       if (nextStep) {
+        const replies: Partial<Record<SupportedLanguage, string>> = {
+          en: `Next up: ${nextStep.title} (${nextStep.duration}). Focus on: ${nextStep.skills.slice(0, 2).join(', ')}.`,
+          ta: `அடுத்த படி: ${nextStep.title} (${nextStep.duration}). இதில் ${nextStep.skills.slice(0, 2).join(', ')} போன்ற திறன்களில் கவனம் செலுத்துங்கள்.`,
+          hi: `अगला कदम: ${nextStep.title} (${nextStep.duration})। मुख्य कौशल: ${nextStep.skills.slice(0, 2).join(', ')}।`,
+          te: `తదుపరి దశ: ${nextStep.title} (${nextStep.duration}). ప్రధాన నైపుణ్యాలు: ${nextStep.skills.slice(0, 2).join(', ')}.`,
+          kn: `ಮುಂದಿನ ಹಂತ: ${nextStep.title} (${nextStep.duration}). ಪ್ರಮುಖ ಕೌಶಲ್ಯಗಳು: ${nextStep.skills.slice(0, 2).join(', ')}.`,
+          ml: `അടുത്ത ഘട്ടം: ${nextStep.title} (${nextStep.duration}). പ്രധാന കഴിവുകൾ: ${nextStep.skills.slice(0, 2).join(', ')}.`
+        };
         return {
-          reply: `Next up: ${nextStep.title} (${nextStep.duration}). Focus on: ${nextStep.skills.join(', ')}. It qualifies for ${nextStep.freeGovtScheme || 'Skill India certification'}.`,
+          reply: replies[lang] || replies.en || '',
           suggestions: ['Explain my roadmap', 'Find opportunities', 'How much can I earn?']
         };
       }
-      return {
-        reply: "You're ready to explore foundational modules. Check Step 1 in your Roadmap tab!",
-        suggestions: ['Explain my roadmap', 'Find a skill for me']
-      };
     }
 
-    if (q.includes('salary') || q.includes('earn') || q.includes('money') || q.includes('income')) {
-      const earning = roadmap?.potentialSalaryGrowth || 'substantial income growth';
+    // 3. Salary & Earnings queries
+    if (q.includes('salary') || q.includes('earn') || q.includes('money') || q.includes('வருமானம்') || q.includes('वेतन') || q.includes('జీతం') || q.includes('ಸಂಬಳ') || q.includes('ശമ്പളം')) {
+      const growth = roadmap?.potentialSalaryGrowth || '₹25,000 - ₹35,000 / month';
+      const replies: Partial<Record<SupportedLanguage, string>> = {
+        en: `By completing this pathway to ${goal}, you can achieve ${growth}. Skill India certificates ensure higher base wages.`,
+        ta: `இந்த ${goal} பயிற்சியை முடிப்பதன் மூலம் நீங்கள் ${growth} வரை வருமானம் ஈட்ட முடியும். அரசு சான்றிதழ்கள் கூடுதல் ஊதியத்தை உறுதி செய்கின்றன.`,
+        hi: `${goal} के इस मार्ग को पूरा करके आप ${growth} तक कमा सकते हैं। सरकारी प्रमाण पत्र बेहतर वेतन सुनिश्चित करते हैं।`,
+        te: `ఈ ${goal} మార్గాన్ని పూర్తి చేయడం ద్వారా మీరు ${growth} వరకు సంపాదించవచ్చు. ప్రభుత్వ ధృవీకరణ పత్రాలు మెరుగైన వేతనాన్ని అందిస్తాయి.`,
+        kn: `ಈ ${goal} ತರಬೇತಿಯನ್ನು ಪೂರ್ಣಗೊಳಿಸುವುದರಿಂದ ನೀವು ${growth} ವರೆಗೆ ಗಳಿಸಬಹುದು. ಸರ್ಕಾರಿ ಪ್ರಮಾಣಪತ್ರಗಳು ಉತ್ತಮ ವೇತನವನ್ನು ಖಚಿತಪಡಿಸುತ್ತವೆ.`,
+        ml: `ഈ ${goal} പൂർത്തിയാക്കുന്നതിലൂടെ നിങ്ങൾക്ക് ${growth} വരെ നേടാനാകും. സർക്കാർ സർട്ടിഫിക്കറ്റുകൾ ഉയർന്ന വരുമാനം ഉറപ്പാക്കുന്നു.`
+      };
       return {
-        reply: `By completing this pathway to ${roadmap?.careerGoal || 'your target goal'}, you can achieve ${earning}. Plus, government certificates ensure higher base wages.`,
+        reply: replies[lang] || replies.en || '',
         suggestions: ['What should I learn next?', 'Explain my roadmap', 'Find opportunities']
       };
     }
 
-    if (q.includes('opportunity') || q.includes('job') || q.includes('hire') || q.includes('scheme')) {
-      return {
-        reply: `There are 4 active government-backed initiatives for ${roadmap?.careerGoal || 'your profile'}: PMKVY 4.0 free training, National Apprenticeship scheme with monthly stipend, and Mudra collateral-free loan support.`,
-        suggestions: ['Explain my roadmap', 'What should I learn next?', 'Find a skill for me']
-      };
-    }
+    // 4. Default / Greeting response
+    const greetings: Partial<Record<SupportedLanguage, string>> = {
+      en: `Hello ${name}! I'm your Skill Bridge AI. You are aiming for ${goal}. How can I support your journey today?`,
+      ta: `வணக்கம் ${name}! நான் உங்கள் ஸ்கில் பிரிட்ஜ் AI உதவியாளர். நீங்கள் ${goal} இலக்கை நோக்கி செல்கிறீர்கள். இன்று நான் உங்களுக்கு எவ்வாறு உதவ முடியும்?`,
+      hi: `नमस्ते ${name}! मैं आपका स्किल ब्रिज AI सहायक हूँ। आपका लक्ष्य ${goal} है। आज मैं आपकी क्या सहायता कर सकता हूँ?`,
+      te: `నమస్కారం ${name}! నేను మీ స్కిల్ బ్రిడ్జ్ AI సహాయకుడిని. మీ లక్ష్యం ${goal}. ఈరోజు నేను మీకు ఎలా సహాయపడగలను?`,
+      kn: `ನಮಸ್ಕಾರ ${name}! ನಾನು ನಿಮ್ಮ ಸ್ಕಿಲ್ ಬ್ರಿಡ್ಜ್ AI ಸಹಾಯಕ. ನಿಮ್ಮ ಗುರಿ ${goal}. ಇಂದು ನಾನು ನಿಮಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಲಿ?`,
+      ml: `നമസ്കാരം ${name}! ഞാൻ നിങ്ങളുടെ സ്കിൽ ബ്രിഡ്ജ് AI സഹായിയാണ്. നിങ്ങളുടെ ലക്ഷ്യം ${goal} ആണ്. ഇന്ന് ഞാൻ നിങ്ങളെ എങ്ങനെ സഹായിക്കണം?`
+    };
 
-    if (q.includes('change') && (q.includes('goal') || q.includes('career'))) {
-      return {
-        reply: "You can change your career goal anytime! Tap the 'Change Goal' button on your Roadmap or tell me what other career excites you.",
-        suggestions: ['Solar Technician', 'Software Developer', 'Agri-Tech Entrepreneur', 'Electrician']
-      };
-    }
-
-    // Default friendly AI response
-    const name = profile?.name ? profile.name.split(' ')[0] : 'friend';
     return {
-      reply: `Hello ${name}! I'm your Skill Bridge AI. You are aiming for ${roadmap?.careerGoal || 'a brighter career'}. How can I support your journey today?`,
+      reply: greetings[lang] || greetings.en || '',
       suggestions: [
         'What should I learn next?',
         'Explain my roadmap',

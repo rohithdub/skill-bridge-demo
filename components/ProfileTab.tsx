@@ -11,16 +11,12 @@ import {
   Users,
   IndianRupee,
   Wrench,
-  HeartHandshake,
   ShieldAlert,
   Edit3,
   Compass,
   Sparkles,
-  RotateCcw,
-  Check,
-  X,
   Share2,
-  FileCheck
+  X
 } from 'lucide-react';
 
 export const ProfileTab: React.FC = () => {
@@ -58,19 +54,22 @@ export const ProfileTab: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-50 text-slate-900 select-none pb-24 overflow-y-auto">
+    <div className="flex-1 flex flex-col bg-[#F6F8FC] text-[#10152E] select-none pb-24 overflow-y-auto">
       
-      {/* Top Profile Header */}
-      <div className="bg-gradient-to-br from-emerald-950 via-slate-900 to-slate-950 text-white p-6 rounded-b-3xl shadow-md relative overflow-hidden">
-        <div className="flex items-center justify-between mb-4">
-          <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold bg-emerald-500/20 px-2.5 py-1 rounded-full border border-emerald-500/30">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            Skill Bridge Citizen ID
+      {/* Top Profile Header with Premium Dark Gradient */}
+      <div className="bg-gradient-to-br from-[#10152E] via-[#24135F] to-[#10152E] text-white p-6 rounded-b-3xl shadow-md relative overflow-hidden border-b border-[#3159E8]/30">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <span className="flex items-center gap-1.5 text-xs text-[#62E6C8] font-semibold bg-[#24135F] px-2.5 py-1 rounded-full border border-[#3159E8]/40 shrink-0">
+            <Sparkles className="w-3.5 h-3.5 text-[#62E6C8]" />
+            <span>Citizen ID:</span>
+            <span className="font-mono font-bold text-white tracking-wider bg-[#10152E] px-2 py-0.5 rounded border border-[#62E6C8]/30">
+              {profile.serialId || 'TN-32-101'}
+            </span>
           </span>
 
           <button
             onClick={handleShareProfile}
-            className="p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white border border-slate-700 active:scale-95"
+            className="p-2 rounded-xl bg-[#10152E] text-slate-300 hover:text-white border border-[#3159E8]/40 active:scale-95 transition-colors shrink-0"
             title="Share summary"
           >
             <Share2 className="w-4 h-4" />
@@ -78,21 +77,21 @@ export const ProfileTab: React.FC = () => {
         </div>
 
         {/* User Avatar & Name */}
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 font-black text-2xl flex items-center justify-center shadow-lg">
+        <div className="flex items-center gap-4 min-w-0">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#24135F] via-[#3159E8] to-[#13B8B2] text-white font-black text-2xl flex items-center justify-center shadow-lg shadow-[#3159E8]/30 border border-[#62E6C8]/30 shrink-0">
             {profile.name ? profile.name[0].toUpperCase() : 'U'}
           </div>
 
-          <div className="flex-1">
-            <h1 className="text-xl font-extrabold text-white uppercase tracking-tight">
-              {profile.name || 'Rohith Kumar'}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl font-extrabold text-white uppercase tracking-tight break-words">
+              {profile.name || 'Candidate'}
             </h1>
-            <p className="text-xs text-emerald-200/90 font-medium mt-0.5">
+            <p className="text-xs text-[#EEEAFE]/90 font-medium mt-0.5 break-words">
               {profile.currentJob || 'Electrical Assistant'} • Age {profile.age || '19'}
             </p>
-            <div className="flex items-center gap-1 text-[11px] text-amber-300 font-semibold mt-1">
-              <Compass className="w-3.5 h-3.5" />
-              <span>Aiming for {careerGoal || 'Solar Technician'}</span>
+            <div className="flex items-center gap-1 text-[11px] text-[#62E6C8] font-semibold mt-1 min-w-0">
+              <Compass className="w-3.5 h-3.5 text-[#62E6C8] shrink-0" />
+              <span className="truncate">Aiming for {careerGoal || 'Solar Technician'}</span>
             </div>
           </div>
         </div>
@@ -101,7 +100,7 @@ export const ProfileTab: React.FC = () => {
         <div className="mt-5 flex gap-2">
           <button
             onClick={handleOpenEdit}
-            className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/30 active:scale-95 cursor-pointer"
+            className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#24135F] via-[#3159E8] to-[#13B8B2] hover:opacity-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-[#3159E8]/30 active:scale-95 cursor-pointer border border-[#62E6C8]/30 transition-all"
           >
             <Edit3 className="w-4 h-4" />
             <span>Edit Profile</span>
@@ -109,7 +108,7 @@ export const ProfileTab: React.FC = () => {
 
           <button
             onClick={() => setStage('career_goal')}
-            className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs border border-slate-700 active:scale-95 cursor-pointer"
+            className="py-2.5 px-3 rounded-xl bg-[#10152E] hover:bg-[#24135F] text-[#EEEAFE] font-semibold text-xs border border-[#3159E8]/40 active:scale-95 cursor-pointer transition-colors"
           >
             Change Goal
           </button>
@@ -117,7 +116,7 @@ export const ProfileTab: React.FC = () => {
       </div>
 
       {copyToast && (
-        <div className="mx-4 mt-2 p-2.5 bg-emerald-600 text-white text-xs font-semibold rounded-xl text-center shadow-md animate-fade-in">
+        <div className="mx-4 mt-2 p-2.5 bg-gradient-to-r from-[#24135F] to-[#3159E8] text-white text-xs font-semibold rounded-xl text-center shadow-md animate-fade-in border border-[#62E6C8]/30">
           Profile summary copied to clipboard!
         </div>
       )}
@@ -128,17 +127,17 @@ export const ProfileTab: React.FC = () => {
         {/* 1. PERSONAL */}
         <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs">
           <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-            <User className="w-3.5 h-3.5 text-emerald-600" />
+            <User className="w-3.5 h-3.5 text-[#3159E8]" />
             Personal
           </h3>
           <div className="grid grid-cols-2 gap-3 text-xs">
-            <div>
+            <div className="min-w-0">
               <span className="text-slate-400 block text-[11px]">Full Name</span>
-              <span className="font-bold text-slate-800 text-sm">{profile.name || 'Rohith Kumar'}</span>
+              <span className="font-bold text-[#10152E] text-sm break-words">{profile.name || 'Candidate'}</span>
             </div>
-            <div>
+            <div className="min-w-0">
               <span className="text-slate-400 block text-[11px]">Age</span>
-              <span className="font-bold text-slate-800 text-sm">{profile.age || '19'} years</span>
+              <span className="font-bold text-[#10152E] text-sm break-words">{profile.age || '19'} years</span>
             </div>
           </div>
         </div>
@@ -146,17 +145,17 @@ export const ProfileTab: React.FC = () => {
         {/* 2. WORK */}
         <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs">
           <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-            <Briefcase className="w-3.5 h-3.5 text-emerald-600" />
+            <Briefcase className="w-3.5 h-3.5 text-[#3159E8]" />
             Work
           </h3>
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div>
               <span className="text-slate-400 block text-[11px]">Current Occupation</span>
-              <span className="font-bold text-slate-800 text-sm">{profile.currentJob || 'Electrical Assistant'}</span>
+              <span className="font-bold text-[#10152E] text-sm">{profile.currentJob || 'Electrical Assistant'}</span>
             </div>
             <div>
               <span className="text-slate-400 block text-[11px]">Employment Mode</span>
-              <span className="font-bold text-slate-800 text-sm">{profile.employmentPreference || 'Wage employment'}</span>
+              <span className="font-bold text-[#10152E] text-sm">{profile.employmentPreference || 'Wage employment'}</span>
             </div>
           </div>
         </div>
@@ -164,29 +163,35 @@ export const ProfileTab: React.FC = () => {
         {/* 3. EDUCATION */}
         <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs">
           <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-            <GraduationCap className="w-3.5 h-3.5 text-emerald-600" />
+            <GraduationCap className="w-3.5 h-3.5 text-[#3159E8]" />
             Education
           </h3>
           <div className="text-xs">
             <span className="text-slate-400 block text-[11px]">Highest Level</span>
-            <span className="font-bold text-slate-800 text-sm">{profile.education || 'Diploma'}</span>
+            <span className="font-bold text-[#10152E] text-sm">{profile.education || 'Diploma'}</span>
           </div>
         </div>
 
-        {/* 4. FAMILY */}
+        {/* 4. FAMILY & COMMUNITY */}
         <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs">
           <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-            <Users className="w-3.5 h-3.5 text-emerald-600" />
-            Family
+            <Users className="w-3.5 h-3.5 text-[#3159E8]" />
+            Family & Community
           </h3>
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div>
               <span className="text-slate-400 block text-[11px]">Traditional Occupation</span>
-              <span className="font-bold text-slate-800 text-sm">{profile.familyJob || 'Farming'}</span>
+              <span className="font-bold text-[#10152E] text-sm">{profile.familyJob || 'Farming'}</span>
             </div>
             <div>
               <span className="text-slate-400 block text-[11px]">Monthly Income Range</span>
-              <span className="font-bold text-slate-800 text-sm">{profile.familyIncome || '₹10,000 – ₹20,000'}</span>
+              <span className="font-bold text-[#10152E] text-sm">{profile.familyIncome || '₹10,000 – ₹20,000'}</span>
+            </div>
+            <div className="col-span-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-slate-400 text-[11px]">Caste / Social Category</span>
+              <span className="font-bold text-[#13B8B2] text-xs px-2.5 py-0.5 bg-[#E4FAF5] border border-[#13B8B2]/30 rounded-full">
+                {profile.caste || 'OBC'}
+              </span>
             </div>
           </div>
         </div>
@@ -194,7 +199,7 @@ export const ProfileTab: React.FC = () => {
         {/* 5. SKILLS & INTERESTS */}
         <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs">
           <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-            <Wrench className="w-3.5 h-3.5 text-emerald-600" />
+            <Wrench className="w-3.5 h-3.5 text-[#3159E8]" />
             Skills & Interests
           </h3>
           <div className="flex flex-wrap gap-1.5">
@@ -204,7 +209,7 @@ export const ProfileTab: React.FC = () => {
             ).map((skill) => (
               <span
                 key={skill}
-                className="px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-semibold"
+                className="px-2.5 py-1 bg-[#EEEAFE] text-[#24135F] border border-[#3159E8]/20 rounded-lg text-xs font-semibold"
               >
                 {skill}
               </span>
@@ -215,10 +220,10 @@ export const ProfileTab: React.FC = () => {
         {/* 6. ACCESSIBILITY & LIMITATIONS */}
         <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs">
           <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-            <ShieldAlert className="w-3.5 h-3.5 text-emerald-600" />
+            <ShieldAlert className="w-3.5 h-3.5 text-[#3159E8]" />
             Accessibility & Limitations
           </h3>
-          <p className="text-xs font-bold text-slate-800">
+          <p className="text-xs font-bold text-[#10152E]">
             {profile.physicalLimitation?.hasLimitation
               ? profile.physicalLimitation.details || 'Accommodations requested'
               : 'None reported (All physical career tracks enabled)'}
@@ -226,15 +231,15 @@ export const ProfileTab: React.FC = () => {
         </div>
 
         {/* 7. CAREER GOAL */}
-        <div className="bg-white rounded-2xl p-4 border border-emerald-300 shadow-2xs bg-emerald-50/30">
-          <h3 className="text-xs font-extrabold text-emerald-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-            <Compass className="w-3.5 h-3.5 text-emerald-600" />
+        <div className="bg-gradient-to-r from-[#E4FAF5] to-[#EEEAFE] rounded-2xl p-4 border border-[#13B8B2]/40 shadow-2xs">
+          <h3 className="text-xs font-extrabold text-[#24135F] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+            <Compass className="w-3.5 h-3.5 text-[#3159E8]" />
             Future Job Goal
           </h3>
-          <p className="text-base font-extrabold text-slate-900">
+          <p className="text-base font-extrabold text-[#10152E]">
             {careerGoal || 'Solar Technician'}
           </p>
-          <span className="text-[11px] text-emerald-700 font-medium block mt-0.5">
+          <span className="text-[11px] text-[#13B8B2] font-semibold block mt-0.5">
             Cognitive Bridge Active in Skill Roadmap Tab
           </span>
         </div>
@@ -243,31 +248,30 @@ export const ProfileTab: React.FC = () => {
         <div className="pt-2 flex flex-col gap-2">
           <button
             onClick={loadDemoProfile}
-            className="w-full py-3 px-4 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold text-xs flex items-center justify-center gap-2 border border-emerald-300 transition-colors"
+            className="w-full py-3 px-4 rounded-xl bg-[#EEEAFE] hover:bg-[#EEEAFE]/80 text-[#24135F] font-bold text-xs flex items-center justify-center gap-2 border border-[#3159E8]/30 transition-colors cursor-pointer"
           >
-            <Sparkles className="w-4 h-4 text-emerald-700" />
-            <span>Reload Rohith Kumar Demo Profile</span>
+            <Sparkles className="w-4 h-4 text-[#3159E8]" />
+            <span>Reload Sample Demo Profile</span>
           </button>
 
           <button
             onClick={resetAll}
-            className="w-full py-2.5 px-4 rounded-xl text-slate-400 hover:text-rose-500 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
+            className="w-full py-2.5 px-4 rounded-xl text-slate-400 hover:text-rose-500 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset Everything (Start Over from Splash)</span>
+            Reset All State
           </button>
         </div>
 
       </div>
 
-      {/* Edit Profile Full Sheet Modal */}
+      {/* Edit Profile Modal */}
       <AnimatePresence>
         {isEditing && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-end justify-center"
+            className="fixed inset-0 bg-[#10152E]/70 backdrop-blur-xs z-50 flex items-end justify-center"
           >
             <motion.div
               initial={{ y: '100%' }}
@@ -277,7 +281,7 @@ export const ProfileTab: React.FC = () => {
               className="w-full max-w-md bg-white rounded-t-3xl max-h-[85vh] overflow-y-auto p-6 flex flex-col gap-4 shadow-2xl"
             >
               <div className="flex items-center justify-between border-b pb-3">
-                <h3 className="font-extrabold text-slate-900 text-lg">Edit Profile</h3>
+                <h3 className="font-extrabold text-[#10152E] text-lg">Edit Profile</h3>
                 <button
                   onClick={() => setIsEditing(false)}
                   className="p-1 rounded-full text-slate-400 hover:text-slate-600"
@@ -289,67 +293,83 @@ export const ProfileTab: React.FC = () => {
               {/* Form Fields */}
               <div className="flex flex-col gap-3 text-xs">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Name</label>
+                  <label className="font-bold text-[#10152E] block mb-1">Name</label>
                   <input
                     type="text"
                     value={editFormData.name}
                     onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-slate-800"
+                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-[#10152E] focus:outline-none focus:ring-2 focus:ring-[#3159E8]"
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Age</label>
+                  <label className="font-bold text-[#10152E] block mb-1">Age</label>
                   <input
                     type="number"
                     value={editFormData.age}
                     onChange={(e) => setEditFormData({ ...editFormData, age: e.target.value })}
-                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-slate-800"
+                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-[#10152E] focus:outline-none focus:ring-2 focus:ring-[#3159E8]"
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Current Job</label>
+                  <label className="font-bold text-[#10152E] block mb-1">Current Job</label>
                   <input
                     type="text"
                     value={editFormData.currentJob}
                     onChange={(e) => setEditFormData({ ...editFormData, currentJob: e.target.value })}
-                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-slate-800"
+                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-[#10152E] focus:outline-none focus:ring-2 focus:ring-[#3159E8]"
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Education</label>
+                  <label className="font-bold text-[#10152E] block mb-1">Education</label>
                   <input
                     type="text"
                     value={editFormData.education}
                     onChange={(e) => setEditFormData({ ...editFormData, education: e.target.value })}
-                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-slate-800"
+                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-[#10152E] focus:outline-none focus:ring-2 focus:ring-[#3159E8]"
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Family Job</label>
+                  <label className="font-bold text-[#10152E] block mb-1">Family Job</label>
                   <input
                     type="text"
                     value={editFormData.familyJob}
                     onChange={(e) => setEditFormData({ ...editFormData, familyJob: e.target.value })}
-                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-slate-800"
+                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-[#10152E] focus:outline-none focus:ring-2 focus:ring-[#3159E8]"
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Monthly Income</label>
+                  <label className="font-bold text-[#10152E] block mb-1">Monthly Income</label>
                   <input
                     type="text"
                     value={editFormData.familyIncome}
                     onChange={(e) => setEditFormData({ ...editFormData, familyIncome: e.target.value })}
-                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-slate-800"
+                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-[#10152E] focus:outline-none focus:ring-2 focus:ring-[#3159E8]"
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Skills (comma separated)</label>
+                  <label className="font-bold text-[#10152E] block mb-1">Caste / Category</label>
+                  <select
+                    value={editFormData.caste || 'OBC'}
+                    onChange={(e) => setEditFormData({ ...editFormData, caste: e.target.value })}
+                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-[#10152E] bg-white focus:outline-none focus:ring-2 focus:ring-[#3159E8]"
+                  >
+                    <option value="General">General</option>
+                    <option value="OBC">OBC</option>
+                    <option value="SC">SC</option>
+                    <option value="ST">ST</option>
+                    <option value="EWS">EWS</option>
+                    <option value="Prefer not to say">Prefer not to say</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-[#10152E] block mb-1">Skills (comma separated)</label>
                   <input
                     type="text"
                     value={editFormData.skills.join(', ')}
@@ -359,12 +379,12 @@ export const ProfileTab: React.FC = () => {
                         skills: e.target.value.split(',').map((s) => s.trim()).filter(Boolean)
                       })
                     }
-                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-slate-800"
+                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-[#10152E] focus:outline-none focus:ring-2 focus:ring-[#3159E8]"
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Employment Preference</label>
+                  <label className="font-bold text-[#10152E] block mb-1">Employment Preference</label>
                   <select
                     value={editFormData.employmentPreference}
                     onChange={(e) =>
@@ -373,7 +393,7 @@ export const ProfileTab: React.FC = () => {
                         employmentPreference: e.target.value as any
                       })
                     }
-                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-slate-800 bg-white"
+                    className="w-full h-11 px-3 rounded-xl border border-slate-300 font-semibold text-[#10152E] bg-white focus:outline-none focus:ring-2 focus:ring-[#3159E8]"
                   >
                     <option value="Self-employment">Self-employment</option>
                     <option value="Wage employment">Wage employment</option>
@@ -393,7 +413,7 @@ export const ProfileTab: React.FC = () => {
                 </button>
                 <button
                   onClick={handleSaveEdit}
-                  className="flex-1 py-3 rounded-xl bg-emerald-600 text-white font-bold text-xs shadow-md"
+                  className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#24135F] via-[#3159E8] to-[#13B8B2] text-white font-bold text-xs shadow-md"
                 >
                   Save Profile
                 </button>

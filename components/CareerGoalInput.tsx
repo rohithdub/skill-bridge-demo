@@ -10,7 +10,6 @@ import {
   Compass,
   Mic,
   MicOff,
-  Send,
   Sparkles,
   ArrowRight,
   Sun,
@@ -49,7 +48,8 @@ export const CareerGoalInput: React.FC = () => {
     speakText,
     isListening,
     setIsListening,
-    isSpeaking
+    isSpeaking,
+    selectedLanguage
   } = useSkillBridge();
 
   const [inputGoal, setInputGoal] = useState<string>(careerGoal || '');
@@ -58,29 +58,34 @@ export const CareerGoalInput: React.FC = () => {
   const goalPrompt = "What is your future job goal? Tell me what you want to become.";
 
   useEffect(() => {
-    speakText(goalPrompt);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const handleSelectGoal = (goalTitle: string) => {
-    setInputGoal(goalTitle);
-    generateRoadmapForGoal(goalTitle);
-  };
-
-  const handleSubmit = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!inputGoal.trim()) return;
-    generateRoadmapForGoal(inputGoal.trim());
-  };
+    // Speak on arrival if no career goal set
+    if (!careerGoal) {
+      speakText(goalPrompt, selectedLanguage);
+    }
+  }, []);
 
   const generateRoadmapForGoal = (targetGoal: string) => {
     setIsGenerating(true);
-    speakText(`Analyzing your background for ${targetGoal}. Crafting your personalized roadmap...`);
+    speakText(`Analyzing pathways from ${profile.currentJob || 'your background'} to ${targetGoal}. Generating your roadmap now.`, selectedLanguage);
 
     setTimeout(() => {
       generateAndSetRoadmap(targetGoal);
       setIsGenerating(false);
       setStage('main_app');
     }, 1800);
+  };
+
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!inputGoal.trim()) return;
+    setCareerGoal(inputGoal.trim());
+    generateRoadmapForGoal(inputGoal.trim());
+  };
+
+  const handleSelectGoal = (selectedTitle: string) => {
+    setInputGoal(selectedTitle);
+    setCareerGoal(selectedTitle);
+    generateRoadmapForGoal(selectedTitle);
   };
 
   const toggleListening = () => {
@@ -91,32 +96,26 @@ export const CareerGoalInput: React.FC = () => {
     }
 
     setIsListening(true);
-    const started = SpeechService.startListening(
-      'en-IN',
-      (transcript) => {
+    SpeechService.startListening(
+      selectedLanguage,
+      (transcript: string) => {
         setIsListening(false);
         setInputGoal(transcript);
+        setCareerGoal(transcript);
         generateRoadmapForGoal(transcript);
       },
-      (err) => {
+      () => {
         setIsListening(false);
-        // Fallback simulation with recommended goal based on current job
-        simulateGoalVoice();
       },
       () => {
         setIsListening(false);
       }
     );
 
-    if (!started) {
-      simulateGoalVoice();
-    }
-  };
-
-  const simulateGoalVoice = () => {
+    // Fallback simulation timer if microphone not permitted
     setTimeout(() => {
       setIsListening(false);
-      const recommended = profile.currentJob.toLowerCase().includes('electric')
+      const recommended = profile.currentJob.toLowerCase().includes('elec')
         ? 'Solar Technician'
         : profile.currentJob.toLowerCase().includes('farm')
         ? 'Agri-Tech Entrepreneur'
@@ -127,15 +126,15 @@ export const CareerGoalInput: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col justify-between p-6 bg-slate-50 text-slate-900 select-none overflow-y-auto">
+    <div className="flex-1 flex flex-col justify-between p-6 bg-[#F6F8FC] text-[#10152E] select-none overflow-y-auto">
       
       {/* Top Header */}
       <div>
-        <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mb-3 shadow-sm">
-          <Compass className="w-6 h-6" />
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#24135F] to-[#3159E8] text-white flex items-center justify-center mb-3 shadow-sm">
+          <Compass className="w-6 h-6 text-[#62E6C8]" />
         </div>
 
-        <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+        <h1 className="text-2xl font-black text-[#10152E] tracking-tight">
           What is your future job goal?
         </h1>
         <p className="text-slate-500 text-sm mt-1">
@@ -143,15 +142,15 @@ export const CareerGoalInput: React.FC = () => {
         </p>
 
         {/* Current Job Reference Bridge Card */}
-        <div className="mt-4 p-3 rounded-2xl bg-white border border-emerald-200/80 shadow-xs flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+        <div className="mt-4 p-3 rounded-2xl bg-white border border-[#3159E8]/30 shadow-xs flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#EEEAFE] text-[#24135F] flex items-center justify-center shrink-0">
             <Briefcase className="w-5 h-5" />
           </div>
           <div className="flex-1 text-xs">
             <span className="text-slate-400 font-medium">Connecting from:</span>
-            <p className="font-bold text-slate-800 text-sm">{profile.currentJob || 'Electrical Assistant'}</p>
+            <p className="font-bold text-[#10152E] text-sm">{profile.currentJob || 'Electrical Assistant'}</p>
           </div>
-          <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-1 rounded-full">
+          <span className="text-[11px] font-bold text-[#24135F] bg-[#EEEAFE] px-2.5 py-1 rounded-full border border-[#3159E8]/20">
             AI Bridge
           </span>
         </div>
@@ -163,12 +162,12 @@ export const CareerGoalInput: React.FC = () => {
 
         <div className="mt-2 text-center">
           {isGenerating ? (
-            <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm">
-              <Sparkles className="w-4 h-4 animate-spin text-amber-500" />
+            <div className="flex items-center gap-2 text-[#3159E8] font-bold text-sm">
+              <Sparkles className="w-4 h-4 animate-spin text-[#62E6C8]" />
               <span>Synthesizing cognitive roadmap...</span>
             </div>
           ) : isListening ? (
-            <p className="text-xs font-bold text-emerald-600 animate-pulse">
+            <p className="text-xs font-bold text-[#3159E8] animate-pulse">
               Listening for your career goal... Speak now
             </p>
           ) : (
@@ -185,7 +184,7 @@ export const CareerGoalInput: React.FC = () => {
           className={`mt-3 w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-all ${
             isListening
               ? 'bg-rose-500 text-white ring-4 ring-rose-200 animate-pulse'
-              : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/30'
+              : 'bg-gradient-to-tr from-[#24135F] via-[#3159E8] to-[#13B8B2] text-white shadow-lg shadow-[#3159E8]/30 border border-[#62E6C8]/30'
           }`}
           aria-label="Speak career goal"
         >
@@ -211,13 +210,13 @@ export const CareerGoalInput: React.FC = () => {
                 disabled={isGenerating}
                 className={`p-3 rounded-xl border text-left transition-all flex items-center gap-2.5 cursor-pointer active:scale-95 ${
                   isSelected
-                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
-                    : 'bg-white text-slate-800 border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/40 shadow-2xs'
+                    ? 'bg-gradient-to-r from-[#24135F] via-[#3159E8] to-[#13B8B2] text-white border-[#3159E8] shadow-sm'
+                    : 'bg-white text-[#10152E] border-slate-200 hover:border-[#3159E8]/40 hover:bg-[#EEEAFE]/30 shadow-2xs'
                 }`}
               >
                 <div
                   className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                    isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-emerald-600'
+                    isSelected ? 'bg-white/20 text-white' : 'bg-[#EEEAFE] text-[#3159E8]'
                   }`}
                 >
                   <IconComp className="w-4 h-4" />
@@ -226,7 +225,7 @@ export const CareerGoalInput: React.FC = () => {
                   <p className="font-bold text-xs truncate">{goal.title}</p>
                   <p
                     className={`text-[10px] truncate ${
-                      isSelected ? 'text-emerald-100' : 'text-slate-400'
+                      isSelected ? 'text-[#62E6C8]' : 'text-slate-400'
                     }`}
                   >
                     {goal.sector}
@@ -245,7 +244,7 @@ export const CareerGoalInput: React.FC = () => {
             onChange={(e) => setInputGoal(e.target.value)}
             placeholder="Type custom goal (e.g. Solar Technician)"
             disabled={isGenerating}
-            className="flex-1 h-12 px-4 rounded-xl border border-slate-300 bg-white text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-xs"
+            className="flex-1 h-12 px-4 rounded-xl border border-slate-300 bg-white text-sm font-semibold text-[#10152E] focus:outline-none focus:ring-2 focus:ring-[#3159E8] shadow-xs"
           />
 
           <button
@@ -253,7 +252,7 @@ export const CareerGoalInput: React.FC = () => {
             disabled={!inputGoal.trim() || isGenerating}
             className={`h-12 px-5 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 transition-all shadow-md ${
               inputGoal.trim() && !isGenerating
-                ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/25 active:scale-95'
+                ? 'bg-gradient-to-r from-[#24135F] via-[#3159E8] via-[#13B8B2] to-[#62E6C8] hover:opacity-95 text-white shadow-[#3159E8]/25 active:scale-95 border border-[#62E6C8]/30'
                 : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
             }`}
           >

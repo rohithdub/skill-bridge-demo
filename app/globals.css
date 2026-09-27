@@ -1,8 +1,34 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0f172a;
-  --foreground: #f8fafc;
+  --background: #10152E;
+  --foreground: #F6F8FC;
+
+  /* Skill Bridge Primary Colors */
+  --sb-indigo: #24135F;
+  --sb-blue: #3159E8;
+  --sb-teal: #13B8B2;
+  --sb-mint: #62E6C8;
+
+  /* Skill Bridge Neutral & Supporting */
+  --sb-navy: #10152E;
+  --sb-white: #FFFFFF;
+  --sb-light-bg: #F6F8FC;
+  --sb-lavender: #EEEAFE;
+  --sb-soft-mint: #E4FAF5;
+
+  /* Skill Bridge Brand Gradients */
+  --sb-gradient-primary: linear-gradient(135deg, #24135F 0%, #3159E8 35%, #13B8B2 70%, #62E6C8 100%);
+  --sb-gradient-primary-h: linear-gradient(90deg, #24135F 0%, #3159E8 35%, #13B8B2 70%, #62E6C8 100%);
+  --sb-gradient-ai: linear-gradient(135deg, #24135F 0%, #3159E8 50%, #13B8B2 100%);
+  --sb-gradient-ai-h: linear-gradient(90deg, #24135F 0%, #3159E8 50%, #13B8B2 100%);
+  --sb-gradient-growth: linear-gradient(135deg, #13B8B2 0%, #62E6C8 100%);
+  --sb-gradient-growth-h: linear-gradient(90deg, #13B8B2 0%, #62E6C8 100%);
+  --sb-gradient-dark: linear-gradient(135deg, #10152E 0%, #24135F 50%, #3159E8 100%);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 body {
@@ -12,6 +38,11 @@ body {
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+}
+
+/* Prevent any text from breaking out of shapes, containers, or cards */
+p, span, h1, h2, h3, h4, h5, h6, button, div, a, label, li, td, th {
+  overflow-wrap: break-word;
 }
 
 /* Custom sleek scrollbars */
@@ -25,12 +56,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.4);
+  background: rgba(49, 89, 232, 0.3);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.7);
+  background: rgba(19, 184, 178, 0.6);
 }
 
 @keyframes pulse-ring {
@@ -51,3 +82,70 @@ body {
 .pulse-ring-effect {
   animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* Brand Utility Classes */
+.bg-sb-signature {
+  background: var(--sb-gradient-primary);
+}
+
+.bg-sb-signature-h {
+  background: var(--sb-gradient-primary-h);
+}
+
+.bg-sb-ai {
+  background: var(--sb-gradient-ai);
+}
+
+.bg-sb-ai-h {
+  background: var(--sb-gradient-ai-h);
+}
+
+.bg-sb-growth {
+  background: var(--sb-gradient-growth);
+}
+
+.bg-sb-dark {
+  background: var(--sb-gradient-dark);
+}
+
+.text-gradient-sb {
+  background: var(--sb-gradient-primary-h);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-ai {
+  background: var(--sb-gradient-ai-h);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-growth {
+  background: var(--sb-gradient-growth-h);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Individual Brand Color Utilities */
+.bg-sb-indigo { background-color: #24135F; }
+.bg-sb-blue { background-color: #3159E8; }
+.bg-sb-teal { background-color: #13B8B2; }
+.bg-sb-mint { background-color: #62E6C8; }
+.bg-sb-navy { background-color: #10152E; }
+.bg-sb-light-bg { background-color: #F6F8FC; }
+.bg-sb-lavender { background-color: #EEEAFE; }
+.bg-sb-soft-mint { background-color: #E4FAF5; }
+
+.text-sb-indigo { color: #24135F; }
+.text-sb-blue { color: #3159E8; }
+.text-sb-teal { color: #13B8B2; }
+.text-sb-mint { color: #62E6C8; }
+.text-sb-navy { color: #10152E; }
+
+.border-sb-indigo { border-color: #24135F; }
+.border-sb-blue { border-color: #3159E8; }
+.border-sb-teal { border-color: #13B8B2; }
+.border-sb-mint { border-color: #62E6C8; }
+.border-sb-lavender { border-color: #EEEAFE; }
+.border-sb-soft-mint { border-color: #E4FAF5; }
+

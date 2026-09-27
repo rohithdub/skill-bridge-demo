@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSkillBridge } from '@/context/SkillBridgeContext';
 import { ONBOARDING_QUESTIONS } from '@/lib/questions';
+import { getLocalizedQuestion, getUIText } from '@/lib/translations';
 import { VoiceWaveform } from './VoiceWaveform';
 import { SpeechService } from '@/lib/speechService';
 import {
@@ -30,10 +31,12 @@ export const VoiceAssistantOnboarding: React.FC = () => {
     speakText,
     isSpeaking,
     isListening,
-    setIsListening
+    setIsListening,
+    selectedLanguage
   } = useSkillBridge();
 
-  const currentQ = ONBOARDING_QUESTIONS[currentQuestionIndex] || ONBOARDING_QUESTIONS[0];
+  const baseQ = ONBOARDING_QUESTIONS[currentQuestionIndex] || ONBOARDING_QUESTIONS[0];
+  const currentQ = getLocalizedQuestion(baseQ, selectedLanguage);
   const [textInput, setTextInput] = useState<string>('');
   const [selectedMulti, setSelectedMulti] = useState<string[]>([]);
   const [limitationSubState, setLimitationSubState] = useState<'prompt' | 'details'>('prompt');
@@ -59,17 +62,23 @@ export const VoiceAssistantOnboarding: React.FC = () => {
     setLimitationDetailText('');
 
     const aiText = currentQ.aiPrompt;
-    setAiSpokenHistory(prev => [
-      ...prev,
-      {
-        id: `q-${currentQ.id}-${Date.now()}`,
-        sender: 'ai',
-        text: aiText
+    setAiSpokenHistory(prev => {
+      const last = prev[prev.length - 1];
+      if (last && last.sender === 'ai' && last.text === aiText) {
+        return prev;
       }
-    ]);
+      return [
+        ...prev,
+        {
+          id: `q-${currentQ.id}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          sender: 'ai',
+          text: aiText
+        }
+      ];
+    });
 
-    speakText(aiText);
-  }, [currentQuestionIndex]); // eslint-disable-line react-hooks/exhaustive-deps
+    speakText(aiText, selectedLanguage);
+  }, [currentQuestionIndex, selectedLanguage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle advancing to the next question or profile summary
   const advanceToNext = (userAnswerText: string, fieldValue: any) => {
@@ -77,7 +86,7 @@ export const VoiceAssistantOnboarding: React.FC = () => {
     setAiSpokenHistory(prev => [
       ...prev,
       {
-        id: `ans-${currentQ.id}-${Date.now()}`,
+        id: `ans-${currentQ.id}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
         sender: 'user',
         text: userAnswerText
       }
@@ -99,7 +108,7 @@ export const VoiceAssistantOnboarding: React.FC = () => {
       if (currentQuestionIndex < ONBOARDING_QUESTIONS.length - 1) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
       } else {
-        // All 9 questions complete!
+        // All questions complete!
         setStage('profile_summary');
       }
     }, 700);
@@ -116,7 +125,7 @@ export const VoiceAssistantOnboarding: React.FC = () => {
     setIsListening(true);
 
     const started = SpeechService.startListening(
-      'en-IN',
+      selectedLanguage,
       (transcript) => {
         setIsListening(false);
         handleVoiceInputResult(transcript);
@@ -168,7 +177,7 @@ export const VoiceAssistantOnboarding: React.FC = () => {
     } else if (currentQ.type === 'special_limitation') {
       if (transcript.toLowerCase().includes('yes')) {
         setLimitationSubState('details');
-        speakText('What kind of limitation should I consider?');
+        speakText(getUIText('limitationPrompt', selectedLanguage), selectedLanguage);
       } else {
         advanceToNext(transcript, { hasLimitation: false });
       }
@@ -206,7 +215,7 @@ export const VoiceAssistantOnboarding: React.FC = () => {
   const handleLimitationChoice = (choice: string) => {
     if (choice === 'Yes') {
       setLimitationSubState('details');
-      speakText('What kind of limitation should I consider?');
+      speakText(getUIText('limitationPrompt', selectedLanguage), selectedLanguage);
     } else if (choice === 'Prefer not to say') {
       advanceToNext('Prefer not to say', { hasLimitation: false, details: 'Prefer not to say' });
     } else {
@@ -223,21 +232,21 @@ export const VoiceAssistantOnboarding: React.FC = () => {
     <div className="flex-1 flex flex-col justify-between bg-slate-50 text-slate-900 select-none relative overflow-hidden">
       
       {/* Top Bar: Progress Indicator & Step Count */}
-      <div className="px-6 pt-3 pb-2 bg-white/80 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 flex flex-col gap-1.5">
+      <div className="px-6 pt-3 pb-2 bg-white/90 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 flex flex-col gap-1.5">
         <div className="flex items-center justify-between text-xs">
-          <div className="flex items-center gap-1.5 font-bold text-slate-700">
-            <Bot className="w-4 h-4 text-emerald-600" />
-            <span>AI Voice Onboarding</span>
+          <div className="flex items-center gap-1.5 font-bold text-slate-800">
+            <Bot className="w-4 h-4 text-sb-blue" />
+            <span>{getUIText('aiVoiceOnboarding', selectedLanguage)}</span>
           </div>
-          <span className="font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+          <span className="font-semibold text-sb-indigo bg-sb-lavender px-2.5 py-0.5 rounded-full border border-sb-blue/20">
             {currentQuestionIndex + 1} of {ONBOARDING_QUESTIONS.length}
           </span>
         </div>
 
-        {/* Thin Sleek Progress Bar */}
+        {/* Brand Full Signature Gradient Progress Bar */}
         <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
           <motion.div
-            className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full"
+            className="h-full bg-sb-signature-h rounded-full"
             initial={{ width: 0 }}
             animate={{ width: `${((currentQuestionIndex + 1) / ONBOARDING_QUESTIONS.length) * 100}%` }}
             transition={{ duration: 0.4 }}
@@ -252,26 +261,26 @@ export const VoiceAssistantOnboarding: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-emerald-900 text-white p-4 rounded-2xl shadow-sm text-xs leading-relaxed flex items-start gap-3 border border-emerald-800"
+            className="bg-sb-dark text-white p-4 rounded-2xl shadow-sm text-xs leading-relaxed flex items-start gap-3 border border-sb-blue/30"
           >
-            <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-full bg-sb-blue/20 text-sb-mint flex items-center justify-center shrink-0">
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
-              <p className="font-semibold text-emerald-200 text-sm mb-1">
-                Hi! I&apos;m your Skill Bridge assistant.
+              <p className="font-bold text-sb-mint text-sm mb-1">
+                Skill Bridge AI
               </p>
-              <p className="text-emerald-100/90">
-                I will ask you 9 simple questions to understand your background, skills, and goals. Speak or tap to answer.
+              <p className="text-slate-200 leading-relaxed">
+                {getUIText('welcomeGreeting', selectedLanguage)}
               </p>
             </div>
           </motion.div>
         )}
 
         {/* Chat History Messages */}
-        {aiSpokenHistory.slice(-4).map((msg) => (
+        {aiSpokenHistory.slice(-4).map((msg, idx) => (
           <motion.div
-            key={msg.id}
+            key={`${msg.id}-${idx}`}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             className={`flex items-start gap-2 max-w-[88%] ${
@@ -281,17 +290,17 @@ export const VoiceAssistantOnboarding: React.FC = () => {
             <div
               className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs ${
                 msg.sender === 'user'
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-emerald-100 text-emerald-700'
+                  ? 'bg-sb-blue text-white shadow-xs'
+                  : 'bg-sb-lavender text-sb-indigo border border-sb-blue/20'
               }`}
             >
               {msg.sender === 'user' ? <User className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
             </div>
 
             <div
-              className={`p-3.5 rounded-2xl text-sm font-medium leading-snug shadow-xs ${
+              className={`p-3.5 rounded-2xl text-sm font-medium leading-snug shadow-xs break-words max-w-full min-w-0 ${
                 msg.sender === 'user'
-                  ? 'bg-emerald-600 text-white rounded-tr-xs'
+                  ? 'bg-sb-blue text-white rounded-tr-xs'
                   : 'bg-white text-slate-800 border border-slate-200/80 rounded-tl-xs'
               }`}
             >
@@ -305,12 +314,12 @@ export const VoiceAssistantOnboarding: React.FC = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="self-start flex items-center gap-2 bg-white px-3 py-2 rounded-2xl border border-slate-200 text-xs text-slate-500"
+            className="self-start flex items-center gap-2 bg-white px-3 py-2 rounded-2xl border border-slate-200 text-xs text-slate-500 shadow-2xs"
           >
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce"></span>
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.2s]"></span>
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.4s]"></span>
-            <span>Processing your response...</span>
+            <span className="w-2 h-2 rounded-full bg-sb-indigo animate-bounce"></span>
+            <span className="w-2 h-2 rounded-full bg-sb-blue animate-bounce [animation-delay:0.2s]"></span>
+            <span className="w-2 h-2 rounded-full bg-sb-teal animate-bounce [animation-delay:0.4s]"></span>
+            <span>{getUIText('processing', selectedLanguage)}</span>
           </motion.div>
         )}
 
@@ -329,7 +338,7 @@ export const VoiceAssistantOnboarding: React.FC = () => {
                 <button
                   key={opt}
                   onClick={() => handleSingleOptionSelect(opt)}
-                  className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 hover:border-emerald-300 border border-slate-200 text-slate-800 text-sm font-semibold active:scale-95 transition-all text-left flex items-center justify-between gap-2 shadow-2xs"
+                  className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-sb-lavender hover:text-sb-indigo hover:border-sb-blue/40 border border-slate-200 text-slate-800 text-sm font-semibold active:scale-95 transition-all text-left flex items-center justify-between gap-2 shadow-2xs cursor-pointer"
                 >
                   <span>{opt}</span>
                   <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
@@ -345,9 +354,9 @@ export const VoiceAssistantOnboarding: React.FC = () => {
                 <button
                   key={ageVal}
                   onClick={() => advanceToNext(ageVal, ageVal)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-emerald-500 hover:text-white border border-slate-200 text-slate-800 text-sm font-bold active:scale-95 transition-all"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-sb-blue hover:text-white border border-slate-200 text-slate-800 text-sm font-bold active:scale-95 transition-all cursor-pointer"
                 >
-                  {ageVal} yrs
+                  {ageVal} {getUIText('yearsSuffix', selectedLanguage)}
                 </button>
               ))}
             </div>
@@ -365,7 +374,7 @@ export const VoiceAssistantOnboarding: React.FC = () => {
                       onClick={() => toggleMultiOption(skill)}
                       className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
                         isChecked
-                          ? 'bg-emerald-600 text-white shadow-xs'
+                          ? 'bg-sb-blue text-white shadow-xs'
                           : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                       }`}
                     >
@@ -379,9 +388,9 @@ export const VoiceAssistantOnboarding: React.FC = () => {
               {selectedMulti.length > 0 && (
                 <button
                   onClick={handleMultiSubmit}
-                  className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm active:scale-98 transition-all"
+                  className="w-full py-2.5 rounded-xl bg-sb-signature-h hover:opacity-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm active:scale-98 transition-all cursor-pointer"
                 >
-                  <span>Confirm Selected Skills ({selectedMulti.length})</span>
+                  <span>{getUIText('confirmSelectedSkills', selectedLanguage)} ({selectedMulti.length})</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               )}
@@ -397,7 +406,7 @@ export const VoiceAssistantOnboarding: React.FC = () => {
                     <button
                       key={opt}
                       onClick={() => handleLimitationChoice(opt)}
-                      className="py-2.5 px-2 rounded-xl bg-slate-100 hover:bg-emerald-500 hover:text-white border border-slate-200 text-slate-800 text-xs font-bold active:scale-95 transition-all text-center"
+                      className="py-2.5 px-2 rounded-xl bg-slate-100 hover:bg-sb-blue hover:text-white border border-slate-200 text-slate-800 text-xs font-bold active:scale-95 transition-all text-center cursor-pointer"
                     >
                       {opt}
                     </button>
@@ -406,21 +415,21 @@ export const VoiceAssistantOnboarding: React.FC = () => {
               ) : (
                 <div className="flex flex-col gap-2">
                   <p className="text-xs font-medium text-slate-600">
-                    What kind of accommodation or limitation should I consider? (Optional)
+                    {getUIText('limitationPrompt', selectedLanguage)}
                   </p>
                   <div className="flex gap-2">
                     <input
                       type="text"
                       value={limitationDetailText}
                       onChange={(e) => setLimitationDetailText(e.target.value)}
-                      placeholder="e.g., Mobility assistance, desk-based work"
-                      className="flex-1 px-3 py-2 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder={getUIText('limitationPlaceholder', selectedLanguage)}
+                      className="flex-1 px-3 py-2 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-sb-blue"
                     />
                     <button
                       onClick={handleLimitationDetailSubmit}
-                      className="px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs"
+                      className="px-4 py-2 rounded-xl bg-sb-blue text-white font-bold text-xs cursor-pointer hover:bg-sb-indigo transition-colors"
                     >
-                      Save
+                      {getUIText('save', selectedLanguage)}
                     </button>
                   </div>
                 </div>
@@ -434,18 +443,18 @@ export const VoiceAssistantOnboarding: React.FC = () => {
           {/* Status Label */}
           <div className="h-5 flex items-center justify-center">
             {isListening ? (
-              <span className="text-xs font-bold text-emerald-600 animate-pulse flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                Listening... Speak now
+              <span className="text-xs font-bold text-sb-blue animate-pulse flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-sb-blue animate-ping"></span>
+                {getUIText('listening', selectedLanguage)}
               </span>
             ) : isSpeaking ? (
-              <span className="text-xs font-bold text-teal-600 flex items-center gap-1.5">
+              <span className="text-xs font-bold text-sb-teal flex items-center gap-1.5">
                 <Volume2 className="w-3.5 h-3.5 animate-pulse" />
-                Speaking...
+                {getUIText('speaking', selectedLanguage)}
               </span>
             ) : (
               <span className="text-xs text-slate-400 font-medium">
-                Tap microphone to speak or type below
+                {getUIText('tapMicOrType', selectedLanguage)}
               </span>
             )}
           </div>
@@ -462,7 +471,7 @@ export const VoiceAssistantOnboarding: React.FC = () => {
             className={`w-16 h-16 rounded-full flex items-center justify-center shadow-xl transition-all relative cursor-pointer ${
               isListening
                 ? 'bg-rose-500 text-white ring-4 ring-rose-300 ring-offset-2 animate-pulse'
-                : 'bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-emerald-500/30 hover:shadow-emerald-500/50'
+                : 'bg-sb-signature text-white shadow-sb-blue/30 hover:shadow-sb-blue/50'
             }`}
             aria-label="Toggle voice input"
           >
@@ -476,8 +485,8 @@ export const VoiceAssistantOnboarding: React.FC = () => {
             type={currentQ.type === 'number' ? 'number' : 'text'}
             value={textInput}
             onChange={(e) => setTextInput(e.target.value)}
-            placeholder={currentQ.placeholder || `Type your answer...`}
-            className="flex-1 h-11 px-4 rounded-xl bg-slate-100 border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
+            placeholder={currentQ.placeholder || getUIText('typeAnswerPlaceholder', selectedLanguage)}
+            className="flex-1 h-11 px-4 rounded-xl bg-slate-100 border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sb-blue focus:bg-white transition-all"
           />
 
           <button
@@ -485,7 +494,7 @@ export const VoiceAssistantOnboarding: React.FC = () => {
             disabled={!textInput.trim()}
             className={`h-11 w-11 rounded-xl flex items-center justify-center transition-all ${
               textInput.trim()
-                ? 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 active:scale-95'
+                ? 'bg-sb-blue text-white shadow-sm hover:bg-sb-indigo active:scale-95 cursor-pointer'
                 : 'bg-slate-100 text-slate-300 cursor-not-allowed'
             }`}
           >
@@ -506,10 +515,10 @@ export const VoiceAssistantOnboarding: React.FC = () => {
                 }
               }
             }}
-            className="h-11 px-3 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-xs font-semibold hover:bg-emerald-100 transition-colors shrink-0"
+            className="h-11 px-3 rounded-xl bg-sb-lavender text-sb-indigo border border-sb-blue/20 text-xs font-semibold hover:bg-sb-blue/10 transition-colors shrink-0 cursor-pointer"
             title="Auto-fill recommended sample answer"
           >
-            Auto-fill
+            {getUIText('autoFill', selectedLanguage)}
           </button>
         </form>
 

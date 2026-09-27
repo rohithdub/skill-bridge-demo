@@ -5,14 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { RoadmapStep as RoadmapStepType } from '@/types/skillbridge';
 import {
   CheckCircle2,
-  Circle,
   Clock,
   Award,
   BookOpen,
   ChevronDown,
   ChevronUp,
-  Sparkles,
-  ExternalLink
+  Sparkles
 } from 'lucide-react';
 
 interface RoadmapStepProps {
@@ -29,12 +27,12 @@ export const RoadmapStep: React.FC<RoadmapStepProps> = ({
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
   const trainingTypeColors: Record<string, string> = {
-    Foundational: 'bg-blue-100 text-blue-800 border-blue-200',
-    'Domain Skill': 'bg-emerald-100 text-emerald-800 border-emerald-200',
-    'Hands-on Lab': 'bg-amber-100 text-amber-800 border-amber-200',
-    'Govt Certification': 'bg-purple-100 text-purple-800 border-purple-200',
-    'Industry Placement': 'bg-teal-100 text-teal-800 border-teal-200',
-    'Self-Employment Launch': 'bg-rose-100 text-rose-800 border-rose-200'
+    Foundational: 'bg-[#EEEAFE] text-[#24135F] border-[#3159E8]/30',
+    'Domain Skill': 'bg-[#E4FAF5] text-[#13B8B2] border-[#13B8B2]/40',
+    'Hands-on Lab': 'bg-amber-50 text-amber-900 border-amber-200',
+    'Govt Certification': 'bg-[#EEEAFE] text-[#3159E8] border-[#3159E8]/40',
+    'Industry Placement': 'bg-[#E4FAF5] text-[#10152E] border-[#62E6C8]/50',
+    'Self-Employment Launch': 'bg-rose-50 text-rose-800 border-rose-200'
   };
 
   return (
@@ -47,8 +45,8 @@ export const RoadmapStep: React.FC<RoadmapStepProps> = ({
           onClick={() => onToggleComplete(step.id)}
           className={`w-9 h-9 rounded-2xl flex items-center justify-center font-bold text-sm transition-all shadow-sm active:scale-90 cursor-pointer ${
             step.isCompleted
-              ? 'bg-emerald-600 text-white ring-4 ring-emerald-100'
-              : 'bg-white border-2 border-slate-300 text-slate-700 hover:border-emerald-500'
+              ? 'bg-gradient-to-tr from-[#24135F] via-[#3159E8] to-[#13B8B2] text-white ring-4 ring-[#62E6C8]/40 shadow-md shadow-[#3159E8]/20'
+              : 'bg-white border-2 border-slate-300 text-slate-700 hover:border-[#3159E8]'
           }`}
           title={step.isCompleted ? 'Mark incomplete' : 'Mark completed'}
         >
@@ -59,11 +57,13 @@ export const RoadmapStep: React.FC<RoadmapStepProps> = ({
           )}
         </button>
 
-        {/* Connecting Vertical Line */}
+        {/* Connecting Vertical Line with Gradient */}
         {!isLast && (
           <div
             className={`w-0.5 my-1.5 transition-colors ${
-              step.isCompleted ? 'bg-emerald-400' : 'bg-slate-200'
+              step.isCompleted 
+                ? 'bg-gradient-to-b from-[#3159E8] via-[#13B8B2] to-[#62E6C8]' 
+                : 'bg-slate-200'
             }`}
             style={{ height: isExpanded ? '190px' : '95px' }}
           />
@@ -72,20 +72,20 @@ export const RoadmapStep: React.FC<RoadmapStepProps> = ({
 
       {/* Step Content Card */}
       <div
-        className={`flex-1 rounded-2xl p-4 transition-all border ${
+        className={`flex-1 min-w-0 rounded-2xl p-4 transition-all border ${
           step.isCompleted
-            ? 'bg-white/95 border-emerald-300/80 shadow-xs'
+            ? 'bg-white/95 border-[#13B8B2]/50 shadow-xs'
             : 'bg-white border-slate-200 shadow-2xs hover:shadow-sm'
         }`}
       >
         {/* Top Badges: Step Number & Duration */}
-        <div className="flex items-center justify-between gap-2 mb-1.5">
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
+        <div className="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 shrink-0">
               STEP {step.stepNumber}
             </span>
             <span
-              className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+              className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${
                 trainingTypeColors[step.trainingType] || 'bg-slate-100 text-slate-700'
               }`}
             >
@@ -93,27 +93,27 @@ export const RoadmapStep: React.FC<RoadmapStepProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+          <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md shrink-0">
             <Clock className="w-3 h-3 text-slate-400" />
             <span>{step.duration}</span>
           </div>
         </div>
 
         {/* Step Title */}
-        <h3 className="text-base font-bold text-slate-900 leading-snug">
+        <h3 className="text-base font-bold text-[#10152E] leading-snug break-words">
           {step.title}
         </h3>
 
         {/* Short Explanation */}
-        <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+        <p className="text-xs text-slate-600 mt-1 leading-relaxed break-words">
           {step.description}
         </p>
 
         {/* Government Scheme / Certification Tag */}
         {step.freeGovtScheme && (
-          <div className="mt-2.5 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/70">
-            <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-            <span className="truncate">{step.freeGovtScheme}</span>
+          <div className="mt-2.5 flex items-center gap-1.5 text-[11px] font-semibold text-[#10152E] bg-[#E4FAF5] px-2.5 py-1 rounded-lg border border-[#13B8B2]/40 min-w-0">
+            <Sparkles className="w-3.5 h-3.5 text-[#13B8B2] shrink-0" />
+            <span className="truncate min-w-0">{step.freeGovtScheme}</span>
           </div>
         )}
 
@@ -121,7 +121,7 @@ export const RoadmapStep: React.FC<RoadmapStepProps> = ({
         <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 cursor-pointer py-1"
+            className="text-xs font-bold text-[#3159E8] hover:text-[#24135F] flex items-center gap-1 cursor-pointer py-1"
           >
             <BookOpen className="w-3.5 h-3.5" />
             <span>{isExpanded ? 'Hide Skills' : 'View Skills'} ({step.skills.length})</span>
@@ -132,11 +132,11 @@ export const RoadmapStep: React.FC<RoadmapStepProps> = ({
             onClick={() => onToggleComplete(step.id)}
             className={`text-xs font-semibold px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
               step.isCompleted
-                ? 'bg-emerald-100 text-emerald-800'
+                ? 'bg-[#E4FAF5] text-[#13B8B2] font-bold border border-[#13B8B2]/30'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
-            {step.isCompleted ? 'Completed' : 'Mark Done'}
+            {step.isCompleted ? 'Completed ✓' : 'Mark Done'}
           </button>
         </div>
 
@@ -154,16 +154,16 @@ export const RoadmapStep: React.FC<RoadmapStepProps> = ({
               <ul className="flex flex-col gap-1.5 text-xs text-slate-700">
                 {step.skills.map((skill, i) => (
                   <li key={i} className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#13B8B2] shrink-0" />
                     <span>{skill}</span>
                   </li>
                 ))}
               </ul>
 
               {step.certification && (
-                <div className="mt-2.5 p-2 bg-purple-50 border border-purple-200 rounded-lg flex items-center gap-2 text-xs text-purple-900 font-medium">
-                  <Award className="w-4 h-4 text-purple-600 shrink-0" />
-                  <span>Accreditation: <strong>{step.certification}</strong></span>
+                <div className="mt-2.5 p-2 bg-[#EEEAFE] border border-[#3159E8]/30 rounded-lg flex items-center gap-2 text-xs text-[#24135F] font-medium min-w-0">
+                  <Award className="w-4 h-4 text-[#3159E8] shrink-0" />
+                  <span className="min-w-0 break-words">Accreditation: <strong>{step.certification}</strong></span>
                 </div>
               )}
             </motion.div>

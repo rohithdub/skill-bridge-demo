@@ -28,14 +28,19 @@ export const VoiceAssistantTab: React.FC = () => {
     speakText,
     isSpeaking,
     isListening,
-    setIsListening
+    setIsListening,
+    selectedLanguage
   } = useSkillBridge();
+
+  const getInitialGreeting = () => {
+    return MockAIService.simulateVoiceResponse('', profile, roadmap || undefined, selectedLanguage).reply;
+  };
 
   const [chatLog, setChatLog] = useState<Array<{ id: string; sender: 'ai' | 'user'; text: string }>>([
     {
       id: 'init-1',
       sender: 'ai',
-      text: `Hello ${profile.name ? profile.name.split(' ')[0] : 'friend'}! I'm your Skill Bridge AI. How can I help you today?`
+      text: getInitialGreeting()
     }
   ]);
   const [inputText, setInputText] = useState<string>('');
@@ -43,11 +48,11 @@ export const VoiceAssistantTab: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const suggestedPrompts = [
+    'Schemes for my caste',
     'What should I learn next?',
     'Explain my roadmap',
     'Find opportunities',
-    'Change my career goal',
-    'Find a skill for me'
+    'Change my career goal'
   ];
 
   useEffect(() => {
@@ -61,7 +66,7 @@ export const VoiceAssistantTab: React.FC = () => {
     setChatLog(prev => [
       ...prev,
       {
-        id: `u-${Date.now()}`,
+        id: `u-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
         sender: 'user',
         text: prompt
       }
@@ -71,18 +76,18 @@ export const VoiceAssistantTab: React.FC = () => {
 
     setTimeout(() => {
       setIsThinking(false);
-      const res = MockAIService.simulateVoiceResponse(prompt, profile, roadmap || undefined);
+      const res = MockAIService.simulateVoiceResponse(prompt, profile, roadmap || undefined, selectedLanguage);
 
       setChatLog(prev => [
         ...prev,
         {
-          id: `ai-${Date.now()}`,
+          id: `ai-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           sender: 'ai',
           text: res.reply
         }
       ]);
 
-      speakText(res.reply);
+      speakText(res.reply, selectedLanguage);
     }, 900);
   };
 
@@ -95,7 +100,7 @@ export const VoiceAssistantTab: React.FC = () => {
 
     setIsListening(true);
     const started = SpeechService.startListening(
-      'en-IN',
+      selectedLanguage,
       (transcript) => {
         setIsListening(false);
         handleSendPrompt(transcript);
@@ -128,13 +133,13 @@ export const VoiceAssistantTab: React.FC = () => {
       {/* Top AI Status Banner */}
       <div className="bg-white px-5 py-3 border-b border-slate-200/90 shadow-2xs flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+          <div className="w-9 h-9 rounded-2xl bg-sb-ai text-white flex items-center justify-center shadow-xs">
             <Bot className="w-5 h-5" />
           </div>
           <div>
             <h2 className="text-sm font-bold text-slate-900">Skill Bridge AI</h2>
-            <p className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <p className="text-[11px] text-sb-teal font-semibold flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-sb-mint animate-pulse" />
               Online & Ready to Guide
             </p>
           </div>
@@ -150,7 +155,7 @@ export const VoiceAssistantTab: React.FC = () => {
               }
             ]);
           }}
-          className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg text-xs"
+          className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg text-xs cursor-pointer"
           title="Clear conversation"
         >
           <RotateCcw className="w-4 h-4" />
@@ -159,9 +164,9 @@ export const VoiceAssistantTab: React.FC = () => {
 
       {/* Chat Messages Log Area */}
       <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
-        {chatLog.map((msg) => (
+        {chatLog.map((msg, idx) => (
           <motion.div
-            key={msg.id}
+            key={`${msg.id}-${idx}`}
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             className={`flex items-start gap-2 max-w-[85%] ${
@@ -170,16 +175,16 @@ export const VoiceAssistantTab: React.FC = () => {
           >
             <div
               className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs ${
-                msg.sender === 'user' ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-700'
+                msg.sender === 'user' ? 'bg-sb-blue text-white shadow-xs' : 'bg-sb-lavender text-sb-indigo border border-sb-blue/20'
               }`}
             >
               {msg.sender === 'user' ? <User className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
             </div>
 
             <div
-              className={`p-3.5 rounded-2xl text-xs sm:text-sm font-medium leading-relaxed shadow-2xs ${
+              className={`p-3.5 rounded-2xl text-xs sm:text-sm font-medium leading-relaxed shadow-2xs break-words max-w-full min-w-0 ${
                 msg.sender === 'user'
-                  ? 'bg-emerald-600 text-white rounded-tr-xs'
+                  ? 'bg-sb-blue text-white rounded-tr-xs'
                   : 'bg-white text-slate-800 border border-slate-200/80 rounded-tl-xs'
               }`}
             >
@@ -190,9 +195,9 @@ export const VoiceAssistantTab: React.FC = () => {
 
         {isThinking && (
           <div className="self-start flex items-center gap-2 bg-white px-3 py-2 rounded-2xl border border-slate-200 text-xs text-slate-500 shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce" />
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.2s]" />
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.4s]" />
+            <span className="w-2 h-2 rounded-full bg-sb-indigo animate-bounce" />
+            <span className="w-2 h-2 rounded-full bg-sb-blue animate-bounce [animation-delay:0.2s]" />
+            <span className="w-2 h-2 rounded-full bg-sb-teal animate-bounce [animation-delay:0.4s]" />
             <span>AI Assistant is thinking...</span>
           </div>
         )}
@@ -210,7 +215,7 @@ export const VoiceAssistantTab: React.FC = () => {
             <button
               key={prompt}
               onClick={() => handleSendPrompt(prompt)}
-              className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-emerald-400 text-slate-700 hover:text-emerald-800 text-xs font-semibold whitespace-nowrap active:scale-95 transition-all shadow-2xs cursor-pointer shrink-0"
+              className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-sb-blue text-slate-700 hover:text-sb-blue text-xs font-semibold whitespace-nowrap active:scale-95 transition-all shadow-2xs cursor-pointer shrink-0"
             >
               {prompt}
             </button>
@@ -223,12 +228,12 @@ export const VoiceAssistantTab: React.FC = () => {
         <div className="flex flex-col items-center justify-center">
           <div className="h-5 flex items-center justify-center">
             {isListening ? (
-              <span className="text-xs font-bold text-emerald-600 animate-pulse flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+              <span className="text-xs font-bold text-sb-blue animate-pulse flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-sb-blue animate-ping" />
                 Listening... Speak your question
               </span>
             ) : isSpeaking ? (
-              <span className="text-xs font-bold text-teal-600 flex items-center gap-1.5">
+              <span className="text-xs font-bold text-sb-teal flex items-center gap-1.5">
                 <Volume2 className="w-3.5 h-3.5 animate-pulse" />
                 Speaking answer...
               </span>
@@ -249,7 +254,7 @@ export const VoiceAssistantTab: React.FC = () => {
             className={`w-16 h-16 rounded-full flex items-center justify-center shadow-xl transition-all cursor-pointer ${
               isListening
                 ? 'bg-rose-500 text-white ring-4 ring-rose-200 animate-pulse'
-                : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/30'
+                : 'bg-sb-signature hover:opacity-95 text-white shadow-sb-blue/30'
             }`}
             aria-label="Ask AI voice assistant"
           >
@@ -270,14 +275,14 @@ export const VoiceAssistantTab: React.FC = () => {
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="Type a question for Skill Bridge..."
-            className="flex-1 h-11 px-4 rounded-xl bg-slate-100 border border-slate-200 text-slate-900 text-xs sm:text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white"
+            className="flex-1 h-11 px-4 rounded-xl bg-slate-100 border border-slate-200 text-slate-900 text-xs sm:text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sb-blue focus:bg-white transition-all"
           />
           <button
             type="submit"
             disabled={!inputText.trim()}
             className={`h-11 w-11 rounded-xl flex items-center justify-center transition-all ${
               inputText.trim()
-                ? 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 active:scale-95 cursor-pointer'
+                ? 'bg-sb-blue text-white shadow-sm hover:bg-sb-indigo active:scale-95 cursor-pointer'
                 : 'bg-slate-100 text-slate-300 cursor-not-allowed'
             }`}
           >
@@ -289,3 +294,4 @@ export const VoiceAssistantTab: React.FC = () => {
     </div>
   );
 };
+

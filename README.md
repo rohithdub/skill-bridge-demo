@@ -11,7 +11,7 @@ Skill Bridge helps underserved users discover a suitable career and skill pathwa
 - 🎙️ **Voice-First AI Conversational Onboarding**:
   - Web Speech API integration (`SpeechRecognition` & `SpeechSynthesis`) with instant interactive simulation fallbacks.
   - Animated audio waveforms, pulsing indicators, and touch-friendly quick answer chips.
-  - Guided 9-question sequence (Name, Age, Current Job, Family Occupation, Education, Income, Skills, Accessibility, Employment Preference).
+  - Guided 10-question sequence (Name, Age, Current Job, Family Occupation, Education, Income, Caste / Social Category, Skills, Accessibility, Employment Preference).
 
 - 📱 **Mobile-First App Experience**:
   - Native mobile feel on smartphones and a centered realistic device container on desktop.
@@ -34,7 +34,7 @@ Skill Bridge helps underserved users discover a suitable career and skill pathwa
   - 👤 **Profile**: Full citizen identity card with inline editing and instant demo controls.
 
 - 🚀 **SIH Presentation Demo Toolbar**:
-  - 1-click **"Rohith Demo"** button to instantly pre-fill sample data during live presentations.
+  - 1-click **"Quick Demo"** button to instantly pre-fill sample data during live presentations.
 
 ---
 
@@ -50,14 +50,15 @@ components/
   ├── SplashScreen.tsx             # Screen 1: Brand mark & tagline
   ├── LanguageSelector.tsx         # Screen 2: 6 Indian languages with vocal greetings
   ├── MobileNumberScreen.tsx       # Screen 3: +91 mobile input (No OTP)
-  ├── VoiceAssistantOnboarding.tsx # Screen 4: 9 questions in order with mic wave
+  ├── VoiceAssistantOnboarding.tsx # Screen 4: 10 questions in order with mic wave
   ├── ProfileConfirmation.tsx      # Screens 11 & 12: Summary & AI voice confirmation
   ├── CareerGoalInput.tsx          # Screen 13: Future job goal voice & chip input
   ├── SkillRoadmap.tsx             # Screens 14 & 15: Journey path & transferable skills
   ├── RoadmapStep.tsx              # Interactive milestone step with NSDC badge
-  ├── BottomNavigation.tsx         # Screen 16: Exactly 3 icons (Mic, Roadmap, Profile)
-  ├── VoiceAssistantTab.tsx        # Screen 17: Interactive AI voice assistant
-  ├── ProfileTab.tsx               # Screen 18: Full profile view & edit modal
+  ├── SchemesTab.tsx               # Community & Caste-tailored government schemes section
+  ├── BottomNavigation.tsx         # Bottom nav: Voice, Roadmap, Schemes, Profile
+  ├── VoiceAssistantTab.tsx        # Interactive AI voice assistant
+  ├── ProfileTab.tsx               # Full profile view & edit modal
   ├── MobileFrame.tsx              # Centered mobile container with status bar
   ├── VoiceWaveform.tsx            # Animated voice audio bars
   └── DemoToolbar.tsx              # Quick SIH demo controls
@@ -65,7 +66,7 @@ components/
 lib/
   ├── mockAI.ts          # Cognitive reasoning engine connecting current jobs to goals
   ├── roadmapData.ts     # Predefined career pathways, transferable skills matrix
-  ├── questions.ts       # 9 onboarding questions definitions
+  ├── questions.ts       # 10 onboarding questions definitions
   └── speechService.ts   # Web Speech API synthesis & recognition service
 
 context/

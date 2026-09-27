@@ -12,7 +12,7 @@ interface VoiceWaveformProps {
 
 export const VoiceWaveform: React.FC<VoiceWaveformProps> = ({
   isActive,
-  color = 'bg-emerald-500',
+  color = 'bg-gradient-to-t from-[#3159E8] to-[#62E6C8]',
   barCount = 12,
   size = 'md'
 }) => {
@@ -31,7 +31,6 @@ export const VoiceWaveform: React.FC<VoiceWaveformProps> = ({
   return (
     <div className={`flex items-center justify-center gap-1.5 ${heights[size]}`}>
       {Array.from({ length: barCount }).map((_, i) => {
-        // Pseudo-random wave amplitudes
         const minH = 20;
         const maxH = 85 + (i % 3) * 15;
         const delay = (i * 0.08) % 0.6;

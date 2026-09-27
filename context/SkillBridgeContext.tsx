@@ -41,18 +41,27 @@ interface SkillBridgeContextType {
   setIsListening: (listening: boolean) => void;
   soundEnabled: boolean;
   setSoundEnabled: (enabled: boolean) => void;
-  speakText: (text: string, onEnd?: () => void) => void;
+  speakText: (text: string, langOverrideOrOnEnd?: string | (() => void), maybeOnEnd?: () => void) => void;
   loadDemoProfile: () => void;
   resetAll: () => void;
 }
 
+export function generateCitizenSerialId(stateCode: string = 'TN', districtCode: string = '32'): string {
+  const randomNum = Math.floor(1000 + Math.random() * 9000);
+  return `${stateCode.toUpperCase()}-${districtCode}-${randomNum}`;
+}
+
 const DEFAULT_PROFILE: UserProfile = {
+  serialId: '',
+  stateCode: 'TN',
+  districtCode: '32',
   name: '',
   age: '',
   currentJob: '',
   familyJob: '',
   education: '',
   familyIncome: '',
+  caste: '',
   skills: [],
   physicalLimitation: { hasLimitation: false },
   employmentPreference: 'Wage employment'
@@ -131,11 +140,27 @@ export const SkillBridgeProvider = ({ children }: { children: ReactNode }) => {
     conversationHistory
   ]);
 
+  const handleSetMobileNumber = (num: string) => {
+    setMobileNumber(num);
+    if (num.length === 10) {
+      setProfile(prev => ({
+        ...prev,
+        serialId: prev.serialId || generateCitizenSerialId(prev.stateCode || 'TN', prev.districtCode || '32')
+      }));
+    }
+  };
+
   const updateProfileField = (field: keyof UserProfile, value: any) => {
-    setProfile(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setProfile(prev => {
+      const updated = {
+        ...prev,
+        [field]: value
+      };
+      if (!updated.serialId) {
+        updated.serialId = generateCitizenSerialId(updated.stateCode || 'TN', updated.districtCode || '32');
+      }
+      return updated;
+    });
   };
 
   const addMessage = (sender: 'ai' | 'user', text: string) => {
@@ -148,22 +173,33 @@ export const SkillBridgeProvider = ({ children }: { children: ReactNode }) => {
     setConversationHistory(prev => [...prev, newMessage]);
   };
 
-  const speakText = (text: string, onEnd?: () => void) => {
+  const speakText = (text: string, langOverrideOrOnEnd?: string | (() => void), maybeOnEnd?: () => void) => {
+    let langCode: string;
+    let onEndCallback: (() => void) | undefined;
+
+    if (typeof langOverrideOrOnEnd === 'string') {
+      langCode = langOverrideOrOnEnd;
+      onEndCallback = maybeOnEnd;
+    } else {
+      langCode = selectedLanguage;
+      onEndCallback = langOverrideOrOnEnd;
+    }
+
     if (!soundEnabled) {
-      if (onEnd) setTimeout(onEnd, 800);
+      if (onEndCallback) setTimeout(onEndCallback, 800);
       return;
     }
     setIsSpeaking(true);
     SpeechService.speak(
       text,
-      selectedLanguage === 'en' ? 'en-IN' : selectedLanguage,
+      langCode,
       () => {
         setIsSpeaking(false);
-        if (onEnd) onEnd();
+        if (onEndCallback) onEndCallback();
       },
       () => {
         setIsSpeaking(false);
-        if (onEnd) onEnd();
+        if (onEndCallback) onEndCallback();
       }
     );
   };
@@ -235,7 +271,7 @@ export const SkillBridgeProvider = ({ children }: { children: ReactNode }) => {
         selectedLanguage,
         setSelectedLanguage,
         mobileNumber,
-        setMobileNumber,
+        setMobileNumber: handleSetMobileNumber,
         profile,
         setProfile,
         updateProfileField,

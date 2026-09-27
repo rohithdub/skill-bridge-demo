@@ -92,6 +92,23 @@ export const ONBOARDING_QUESTIONS: OnboardingQuestion[] = [
   },
   {
     id: 7,
+    field: 'caste',
+    aiPrompt: 'What is your caste category or community?',
+    subtitle: 'This helps identify eligible government scholarships, fee waivers, and reservation benefits.',
+    type: 'single_choice',
+    options: [
+      'General',
+      'OBC',
+      'SC',
+      'ST',
+      'EWS',
+      'Prefer not to say'
+    ],
+    placeholder: 'e.g., OBC, SC, ST, General',
+    demoValue: 'OBC'
+  },
+  {
+    id: 8,
     field: 'skills',
     aiPrompt: 'What skills do you have or what are you interested in learning?',
     subtitle: 'Select all that match your interest (multiple choice) or speak them:',
@@ -115,7 +132,7 @@ export const ONBOARDING_QUESTIONS: OnboardingQuestion[] = [
     demoValue: ['Electrical work', 'Technology']
   },
   {
-    id: 8,
+    id: 9,
     field: 'physicalLimitation',
     aiPrompt: 'Do you have any physical disability or limitation that I should consider when suggesting opportunities?',
     subtitle: 'Skill Bridge suggests inclusive and accessible workspaces for everyone.',
@@ -124,7 +141,7 @@ export const ONBOARDING_QUESTIONS: OnboardingQuestion[] = [
     demoValue: { hasLimitation: false }
   },
   {
-    id: 9,
+    id: 10,
     field: 'employmentPreference',
     aiPrompt: 'Are you interested in self-employment or wage employment?',
     subtitle: 'Choose whether you want a salaried job, your own business, or both.',
@@ -141,11 +158,18 @@ export const ONBOARDING_QUESTIONS: OnboardingQuestion[] = [
 
 export const SUPPORTED_LANGUAGES = [
   { code: 'en', name: 'English', nativeName: 'English', greeting: 'Welcome to Skill Bridge' },
-  { code: 'ta', name: 'Tamil', nativeName: 'தமிழ்', greeting: 'ஸ்கில் பிரிட்ஜுக்கு வரவேற்கிறோம்' },
   { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', greeting: 'स्किल ब्रिज में आपका स्वागत है' },
+  { code: 'ta', name: 'Tamil', nativeName: 'தமிழ்', greeting: 'ஸ்கில் பிரிட்ஜுக்கு வரவேற்கிறோம்' },
   { code: 'te', name: 'Telugu', nativeName: 'తెలుగు', greeting: 'స్కిల్ బ్రిడ్జ్‌కి స్వాగతం' },
   { code: 'kn', name: 'Kannada', nativeName: 'ಕನ್ನಡ', greeting: 'ಸ್ಕಿಲ್ ಬ್ರಿಡ್ಜ್‌ಗೆ ಸುಸ್ವಾಗತ' },
-  { code: 'ml', name: 'Malayalam', nativeName: 'മലയാളം', greeting: 'സ്കിൽ ബ്രിഡ്ജിലേക്ക് സ്വാഗതം' }
+  { code: 'ml', name: 'Malayalam', nativeName: 'മലയാളം', greeting: 'സ്കിൽ ബ്രിഡ്ജിലേക്ക് സ്വാഗതം' },
+  { code: 'bn', name: 'Bengali', nativeName: 'বাংলা', greeting: 'স্কিল ব্রিজে আপনাকে স্বাগতম' },
+  { code: 'mr', name: 'Marathi', nativeName: 'मराठी', greeting: 'स्किल ब्रिजमध्ये आपले स्वागत आहे' },
+  { code: 'gu', name: 'Gujarati', nativeName: 'ગુજરાતી', greeting: 'સ્કિલ બ્રિજમાં આપનું સ્વાગત છે' },
+  { code: 'pa', name: 'Punjabi', nativeName: 'ਪੰਜਾਬੀ', greeting: 'ਸਕਿੱਲ ਬ੍ਰਿਜ ਵਿੱਚ ਤੁਹਾਡਾ ਸਵਾਗਤ ਹੈ' },
+  { code: 'or', name: 'Odia', nativeName: 'ଓଡ଼ିଆ', greeting: 'ସ୍କିଲ୍ ବ୍ରିଜ୍ କୁ ଆପଣଙ୍କୁ ସ୍ୱାଗତ' },
+  { code: 'as', name: 'Assamese', nativeName: 'অসমীয়া', greeting: 'স্কিল ব্ৰিজলৈ আপোনাক স্বাগতম' },
+  { code: 'ur', name: 'Urdu', nativeName: 'اردو', greeting: 'اسکل برج میں خوش آمدید' }
 ] as const;
 
 export const POPULAR_CAREER_GOALS = [

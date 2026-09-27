@@ -10,9 +10,12 @@ import { VoiceAssistantOnboarding } from '@/components/VoiceAssistantOnboarding'
 import { ProfileConfirmation } from '@/components/ProfileConfirmation';
 import { CareerGoalInput } from '@/components/CareerGoalInput';
 import { SkillRoadmap } from '@/components/SkillRoadmap';
+import { SchemesTab } from '@/components/SchemesTab';
 import { VoiceAssistantTab } from '@/components/VoiceAssistantTab';
 import { ProfileTab } from '@/components/ProfileTab';
 import { BottomNavigation } from '@/components/BottomNavigation';
+import { AdminLogin } from '@/components/AdminLogin';
+import { AdminDashboard } from '@/components/AdminDashboard';
 import { AnimatePresence, motion } from 'framer-motion';
 
 function AppContent() {
@@ -49,7 +52,7 @@ function AppContent() {
           </motion.div>
         )}
 
-        {/* SCREEN 3: MOBILE NUMBER */}
+        {/* SCREEN 3: MOBILE NUMBER & OTP VERIFICATION */}
         {stage === 'mobile' && (
           <motion.div
             key="mobile"
@@ -63,7 +66,35 @@ function AppContent() {
           </motion.div>
         )}
 
-        {/* SCREEN 4: VOICE ASSISTANT ONBOARDING (QUESTIONS 1-9) */}
+        {/* SCREEN: ADMIN LOGIN */}
+        {stage === 'admin_login' && (
+          <motion.div
+            key="admin_login"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.3 }}
+            className="flex-1 flex flex-col h-full"
+          >
+            <AdminLogin />
+          </motion.div>
+        )}
+
+        {/* SCREEN: ADMIN DASHBOARD (WHO IS IN THIS & STATUS/WHAT THEY ARE LEARNING) */}
+        {stage === 'admin_dashboard' && (
+          <motion.div
+            key="admin_dashboard"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.3 }}
+            className="flex-1 flex flex-col h-full"
+          >
+            <AdminDashboard />
+          </motion.div>
+        )}
+
+        {/* SCREEN 4: VOICE ASSISTANT ONBOARDING (QUESTIONS 1-10) */}
         {stage === 'voice_onboarding' && (
           <motion.div
             key="voice_onboarding"
@@ -117,10 +148,11 @@ function AppContent() {
             <div className="flex-1 flex flex-col overflow-hidden relative">
               {activeTab === 'voice' && <VoiceAssistantTab />}
               {activeTab === 'roadmap' && <SkillRoadmap />}
+              {activeTab === 'schemes' && <SchemesTab />}
               {activeTab === 'profile' && <ProfileTab />}
             </div>
 
-            {/* Exactly 3 Primary Icons in Fixed Bottom Navigation */}
+            {/* Fixed Bottom Navigation with Schemes after Roadmap */}
             <BottomNavigation />
           </motion.div>
         )}

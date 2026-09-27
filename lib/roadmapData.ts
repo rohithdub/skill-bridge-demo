@@ -447,12 +447,16 @@ export const PREDEFINED_PATHWAYS: PredefinedPathway[] = [
 ];
 
 export const DEMO_ROHITH_PROFILE: UserProfile = {
+  serialId: 'TN-32-101',
+  stateCode: 'TN',
+  districtCode: '32',
   name: 'Rohith Kumar',
   age: '19',
   currentJob: 'Electrical Assistant',
   familyJob: 'Farming',
   education: 'Diploma',
   familyIncome: '₹10,000 – ₹20,000',
+  caste: 'OBC',
   skills: ['Electrical work', 'Technology'],
   physicalLimitation: {
     hasLimitation: false
