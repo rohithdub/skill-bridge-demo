@@ -24,7 +24,13 @@ import { OfflineBanner } from '@/components/OfflineBanner';
 import { AnimatePresence, motion } from 'framer-motion';
 
 function AppContent() {
-  const { stage, activeTab } = useSkillBridge();
+  const { stage, activeTab, isHydrated } = useSkillBridge();
+
+  if (!isHydrated) {
+    return (
+      <div className="flex-1 flex flex-col h-full relative overflow-hidden bg-gradient-to-b from-[#10152E] via-[#24135F] to-[#10152E]" />
+    );
+  }
 
   return (
     <div className="flex-1 flex flex-col h-full relative overflow-hidden bg-slate-50">

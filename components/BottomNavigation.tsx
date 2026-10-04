@@ -3,35 +3,36 @@
 import React from 'react';
 import { useSkillBridge } from '@/context/SkillBridgeContext';
 import { MainAppTab } from '@/types/skillbridge';
+import { getUIText } from '@/lib/translations';
 import { Home, Route, Briefcase, Landmark, User } from 'lucide-react';
 
 export const BottomNavigation: React.FC = () => {
-  const { activeTab, setActiveTab } = useSkillBridge();
+  const { activeTab, setActiveTab, selectedLanguage } = useSkillBridge();
 
-  const navItems: { id: MainAppTab; label: string; icon: any }[] = [
+  const navItems: { id: MainAppTab; labelKey: string; icon: any }[] = [
     {
       id: 'home',
-      label: 'Home',
+      labelKey: 'navHome',
       icon: Home
     },
     {
       id: 'roadmap',
-      label: 'Roadmap',
+      labelKey: 'navRoadmap',
       icon: Route
     },
     {
       id: 'opportunities',
-      label: 'Opportunities',
+      labelKey: 'navOpportunities',
       icon: Briefcase
     },
     {
       id: 'schemes',
-      label: 'Benefits',
+      labelKey: 'navSchemes',
       icon: Landmark
     },
     {
       id: 'profile',
-      label: 'Profile',
+      labelKey: 'navProfile',
       icon: User
     }
   ];
@@ -40,7 +41,7 @@ export const BottomNavigation: React.FC = () => {
     <nav
       className="w-full bg-white/95 backdrop-blur-md border-t border-slate-200/90 py-2 px-1 sm:px-3 flex items-center justify-between shadow-[0_-4px_20px_rgba(36,19,95,0.06)] shrink-0 z-40 select-none"
       role="navigation"
-      aria-label="Main navigation"
+      aria-label={getUIText('mainNavigation', selectedLanguage)}
     >
       {navItems.map((item) => {
         const IconComponent = item.icon;
@@ -73,7 +74,7 @@ export const BottomNavigation: React.FC = () => {
             </div>
 
             <span className={`text-[9px] sm:text-[10.5px] mt-0.5 tracking-tight text-center leading-tight truncate max-w-full ${isActive ? 'text-[#24135F] font-bold' : ''}`}>
-              {item.label}
+              {getUIText(item.labelKey, selectedLanguage)}
             </span>
           </button>
         );

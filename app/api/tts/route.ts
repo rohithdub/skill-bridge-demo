@@ -9,17 +9,31 @@ const MAX_CACHE_SIZE = 150;
 
 const LANG_MAP: Record<string, string> = {
   en: 'en',
-  ta: 'ta',
   hi: 'hi',
+  ta: 'ta',
   te: 'te',
   kn: 'kn',
   ml: 'ml',
+  bn: 'bn',
+  mr: 'mr',
+  gu: 'gu',
+  pa: 'pa',
+  or: 'or',
+  as: 'as',
+  ur: 'ur',
   'en-in': 'en',
-  'ta-in': 'ta',
   'hi-in': 'hi',
+  'ta-in': 'ta',
   'te-in': 'te',
   'kn-in': 'kn',
-  'ml-in': 'ml'
+  'ml-in': 'ml',
+  'bn-in': 'bn',
+  'mr-in': 'mr',
+  'gu-in': 'gu',
+  'pa-in': 'pa',
+  'or-in': 'or',
+  'as-in': 'as',
+  'ur-in': 'ur'
 };
 
 function splitTextIntoChunks(text: string, maxLen: number = 140): string[] {
@@ -88,17 +102,39 @@ function fetchGoogleTtsChunk(textChunk: string, langCode: string): Promise<Buffe
   });
 }
 
+function transliterateOdiaToDevanagari(text: string): string {
+  let result = '';
+  for (let i = 0; i < text.length; i++) {
+    const code = text.charCodeAt(i);
+    if (code === 0x0b35 || code === 0x0b71) {
+      result += 'व';
+    } else if (code >= 0x0b01 && code <= 0x0b70) {
+      result += String.fromCharCode(code - 0x0b00 + 0x0900);
+    } else {
+      result += text[i];
+    }
+  }
+  return result;
+}
+
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const rawText = searchParams.get('text');
-    const rawLang = searchParams.get('lang') || 'en';
-
-    if (!rawText || !rawText.trim()) {
-      return NextResponse.json({ error: 'Missing text parameter' }, { status: 400 });
+    let rawText: string | null = null;
+    let rawLang: string | null = null;
+    try {
+      const parsedUrl = new URL(request.url);
+      rawText = parsedUrl.searchParams.get('text');
+      rawLang = parsedUrl.searchParams.get('lang');
+    } catch {
+      rawText = null;
+      rawLang = null;
     }
 
-    const normalizedLang = rawLang.toLowerCase().trim();
+    if (!rawText || !rawText.trim()) {
+      return NextResponse.json({ status: 'ok', message: 'Skill Bridge TTS Endpoint (Provide ?text=&lang= for synthesis)' }, { status: 200 });
+    }
+
+    const normalizedLang = (rawLang || 'en').toLowerCase().trim();
     const langCode = LANG_MAP[normalizedLang] || (normalizedLang.includes('-') ? normalizedLang.split('-')[0] : 'en');
     const cleanText = rawText.trim();
 
@@ -115,11 +151,24 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const chunks = splitTextIntoChunks(cleanText, 140);
+    // Determine target provider language and text representation
+    let providerLang = langCode;
+    let textToSynthesize = cleanText;
+
+    if (langCode === 'as') {
+      // Assamese uses Bengali-Assamese script; synthesize with authentic eastern Indo-Aryan engine
+      providerLang = 'bn';
+    } else if (langCode === 'or') {
+      // Odia characters mapped to ISCII Brahmic Devanagari phonemes for authentic spoken pronunciation
+      providerLang = 'hi';
+      textToSynthesize = transliterateOdiaToDevanagari(cleanText);
+    }
+
+    const chunks = splitTextIntoChunks(textToSynthesize, 140);
     const chunkBuffers: Buffer[] = [];
 
     for (const chunk of chunks) {
-      const buf = await fetchGoogleTtsChunk(chunk, langCode);
+      const buf = await fetchGoogleTtsChunk(chunk, providerLang);
       chunkBuffers.push(buf);
     }
 
@@ -141,10 +190,15 @@ export async function GET(request: NextRequest) {
       }
     });
   } catch (error: any) {
-    console.error('TTS API error:', error);
+    const errMessage = error?.message || 'Unknown error';
+    const isUnsupported = errMessage.includes('400') || errMessage.includes('404');
+    console.error(`[TTS API Error]: ${errMessage}`);
     return NextResponse.json(
-      { error: 'Failed to synthesize speech', details: error?.message || 'Unknown error' },
-      { status: 500 }
+      { 
+        error: isUnsupported ? 'TTS audio voice not available for this language' : 'Failed to synthesize speech', 
+        details: errMessage 
+      },
+      { status: isUnsupported ? 501 : 500 }
     );
   }
 }

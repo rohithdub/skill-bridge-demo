@@ -26,6 +26,14 @@ import { SpeechService } from '@/lib/speechService';
 import { SkillGapEngine } from '@/lib/skillGapEngine';
 import { OpportunityService, DEMO_OPPORTUNITIES, DEMO_TRAINING_PROGRAMS } from '@/lib/opportunityData';
 import { AdminStore } from '@/lib/adminStore';
+import {
+  normalizeProfile,
+  normalizeSkills,
+  normalizeRoadmap,
+  normalizeOpportunities,
+  normalizeTrainingPrograms,
+  normalizeLanguage
+} from '@/lib/normalization';
 
 interface SkillBridgeContextType {
   stage: AppStage;
@@ -62,6 +70,8 @@ interface SkillBridgeContextType {
   opportunities: Opportunity[];
   trainingPrograms: TrainingProgram[];
   enterprisePathway: EnterprisePathway | null;
+  opportunitiesSubView: 'jobs' | 'training' | 'enterprise' | 'applications';
+  setOpportunitiesSubView: (view: 'jobs' | 'training' | 'enterprise' | 'applications') => void;
   activeJourneyStep: number;
   setActiveJourneyStep: (step: number) => void;
   applyOpportunity: (oppId: string) => void;
@@ -80,6 +90,11 @@ interface SkillBridgeContextType {
   // Multi-channel Simulators
   activeSimulator: 'ivr' | 'whatsapp' | null;
   setActiveSimulator: (sim: 'ivr' | 'whatsapp' | null) => void;
+
+  // Onboarding & Hydration State
+  hasCompletedOnboarding: boolean;
+  setHasCompletedOnboarding: (completed: boolean) => void;
+  isHydrated: boolean;
 
   // Demo Control
   selectedScenario: 'solar' | 'tailor';
@@ -126,7 +141,19 @@ const STORAGE_KEY = 'skill_bridge_state_v5';
 export const SkillBridgeProvider = ({ children }: { children: ReactNode }) => {
   const [stage, setStage] = useState<AppStage>('splash');
   const [activeTab, setActiveTab] = useState<MainAppTab>('home');
-  const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>('en');
+  const [selectedLanguage, setSelectedLanguageState] = useState<SupportedLanguage>('en');
+
+  const setSelectedLanguage = (lang: SupportedLanguage) => {
+    const validLang = normalizeLanguage(lang);
+    setSelectedLanguageState(validLang);
+    setProfile(prev => ({ ...prev, preferredLanguage: validLang }));
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('skillbridge_language', validLang);
+      } catch (e) {}
+    }
+  };
+
   const [mobileNumber, setMobileNumber] = useState<string>('');
   const [profile, setProfile] = useState<UserProfile>(DEFAULT_PROFILE);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
@@ -137,11 +164,13 @@ export const SkillBridgeProvider = ({ children }: { children: ReactNode }) => {
   const [isListening, setIsListening] = useState<boolean>(false);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [isHydrated, setIsHydrated] = useState<boolean>(false);
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean>(false);
 
   // SIH Extended State
   const [opportunities, setOpportunities] = useState<Opportunity[]>(DEMO_OPPORTUNITIES);
   const [trainingPrograms, setTrainingPrograms] = useState<TrainingProgram[]>(DEMO_TRAINING_PROGRAMS);
   const [enterprisePathway, setEnterprisePathway] = useState<EnterprisePathway | null>(OpportunityService.getEnterprisePathway('solar'));
+  const [opportunitiesSubView, setOpportunitiesSubView] = useState<'jobs' | 'training' | 'enterprise' | 'applications'>('jobs');
   const [activeJourneyStep, setActiveJourneyStep] = useState<number>(4);
   const [offlineMode, setOfflineMode] = useState<boolean>(false);
   const [syncQueue, setSyncQueue] = useState<OfflineSyncAction[]>([]);
@@ -156,27 +185,75 @@ export const SkillBridgeProvider = ({ children }: { children: ReactNode }) => {
   // Restore from localStorage on client mount
   useEffect(() => {
     try {
+      const savedLang = localStorage.getItem('skillbridge_language') || localStorage.getItem('skillbridge_lang');
+      let langToSet: SupportedLanguage = 'en';
+      if (savedLang) {
+        langToSet = savedLang as SupportedLanguage;
+      }
+
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.profile) setProfile(parsed.profile);
-        if (parsed.stage) setStage(parsed.stage);
+        if (parsed.profile) setProfile(normalizeProfile(parsed.profile));
         if (parsed.activeTab) setActiveTab(parsed.activeTab);
-        if (parsed.selectedLanguage) setSelectedLanguage(parsed.selectedLanguage);
+        if (parsed.selectedLanguage && !savedLang) langToSet = normalizeLanguage(parsed.selectedLanguage);
         if (parsed.mobileNumber) setMobileNumber(parsed.mobileNumber);
         if (parsed.careerGoal) setCareerGoal(parsed.careerGoal);
-        if (parsed.roadmap) setRoadmap(parsed.roadmap);
+        if (parsed.roadmap) setRoadmap(normalizeRoadmap(parsed.roadmap));
         if (parsed.currentQuestionIndex !== undefined) setCurrentQuestionIndex(parsed.currentQuestionIndex);
         if (parsed.conversationHistory) setConversationHistory(parsed.conversationHistory);
-        if (parsed.opportunities) setOpportunities(parsed.opportunities);
-        if (parsed.trainingPrograms) setTrainingPrograms(parsed.trainingPrograms);
+        if (parsed.opportunities) setOpportunities(normalizeOpportunities(parsed.opportunities));
+        if (parsed.trainingPrograms) setTrainingPrograms(normalizeTrainingPrograms(parsed.trainingPrograms));
         if (parsed.enterprisePathway) setEnterprisePathway(parsed.enterprisePathway);
         if (parsed.activeJourneyStep !== undefined) setActiveJourneyStep(parsed.activeJourneyStep);
         if (parsed.syncQueue) setSyncQueue(parsed.syncQueue);
         if (parsed.selectedScenario) setSelectedScenario(parsed.selectedScenario);
+
+        // Deterministic onboarding check: genuine completion requires explicit flag or valid profile+roadmap
+        const isCompleted = Boolean(
+          parsed.hasCompletedOnboarding === true ||
+          (parsed.profile?.name && parsed.roadmap)
+        );
+        setHasCompletedOnboarding(isCompleted);
+
+        if (isCompleted) {
+          // Returning user who completed onboarding:
+          // Keep admin screens if they were navigating admin; otherwise land in main_app directly
+          const targetStage: AppStage = (parsed.stage === 'admin_dashboard' || parsed.stage === 'admin_login')
+            ? parsed.stage
+            : 'main_app';
+          setStage(targetStage);
+        } else {
+          // New user or user mid-onboarding:
+          // Preserve valid mid-onboarding stage if they were already in mobile/questions/etc.
+          const validOnboardingStages: AppStage[] = [
+            'splash',
+            'language',
+            'mobile',
+            'voice_onboarding',
+            'profile_summary',
+            'profile_confirmation',
+            'career_goal',
+            'admin_login',
+            'admin_dashboard'
+          ];
+          if (parsed.stage && validOnboardingStages.includes(parsed.stage)) {
+            setStage(parsed.stage);
+          } else {
+            setStage('splash');
+          }
+        }
+      } else {
+        // Completely new user / first visit
+        setHasCompletedOnboarding(false);
+        setStage('splash');
       }
+
+      setSelectedLanguageState(normalizeLanguage(langToSet));
     } catch (e) {
       console.warn('Could not restore state from localStorage:', e);
+      setHasCompletedOnboarding(false);
+      setStage('splash');
     }
     setIsHydrated(true);
   }, []);
@@ -185,7 +262,9 @@ export const SkillBridgeProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!isHydrated) return;
     try {
+      localStorage.setItem('skillbridge_language', selectedLanguage);
       const stateToSave = {
+        hasCompletedOnboarding,
         stage,
         activeTab,
         selectedLanguage,
@@ -213,6 +292,7 @@ export const SkillBridgeProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [
     isHydrated,
+    hasCompletedOnboarding,
     stage,
     activeTab,
     selectedLanguage,
@@ -242,11 +322,13 @@ export const SkillBridgeProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateProfileField = (field: keyof UserProfile, value: any) => {
+    const normalizedValue = field === 'skills' ? normalizeSkills(value) : value;
+
     setProfile(prev => {
-      const updated = {
+      const updated = normalizeProfile({
         ...prev,
-        [field]: value
-      };
+        [field]: normalizedValue
+      });
       if (!updated.serialId) {
         updated.serialId = generateCitizenSerialId(updated.stateCode || 'TN', updated.districtCode || '32');
       }
@@ -259,7 +341,7 @@ export const SkillBridgeProvider = ({ children }: { children: ReactNode }) => {
         {
           id: `sync-${Date.now()}`,
           actionType: 'UPDATE_PROFILE',
-          payload: { field, value },
+          payload: { field, value: normalizedValue },
           timestamp: Date.now(),
           status: 'Queued'
         }
@@ -309,14 +391,16 @@ export const SkillBridgeProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const generateAndSetRoadmap = (goal: string): GeneratedRoadmap => {
-    const newRoadmap = MockAIService.generateRoadmap(profile, goal);
+    const rawRoadmap = MockAIService.generateRoadmap(profile, goal);
+    const newRoadmap = normalizeRoadmap(rawRoadmap) || rawRoadmap;
     setCareerGoal(goal);
     setRoadmap(newRoadmap);
+    setHasCompletedOnboarding(true);
 
     // Update matched opportunities & training
-    const matchedOpps = OpportunityService.matchOpportunities(profile, goal);
+    const matchedOpps = normalizeOpportunities(OpportunityService.matchOpportunities(profile, goal));
     setOpportunities(matchedOpps);
-    const matchedTrain = OpportunityService.matchTraining(profile, goal);
+    const matchedTrain = normalizeTrainingPrograms(OpportunityService.matchTraining(profile, goal));
     setTrainingPrograms(matchedTrain);
     setEnterprisePathway(OpportunityService.getEnterprisePathway(goal));
 
@@ -483,18 +567,20 @@ export const SkillBridgeProvider = ({ children }: { children: ReactNode }) => {
   const loadScenario = (scenario: 'solar' | 'tailor') => {
     setSelectedScenario(scenario);
     if (scenario === 'solar') {
-      setProfile({ ...DEMO_ROHITH_PROFILE });
-      setMobileNumber(DEMO_ROHITH_PROFILE.mobile || '9876543210');
+      const normProfile = normalizeProfile(DEMO_ROHITH_PROFILE);
+      setProfile(normProfile);
+      setMobileNumber(normProfile.mobile || '9876543210');
       setCareerGoal(DEMO_ROHITH_GOAL);
-      setSelectedLanguage('en');
-      const roadmapData = MockAIService.generateRoadmap(DEMO_ROHITH_PROFILE, DEMO_ROHITH_GOAL);
+      if (!selectedLanguage) setSelectedLanguage('en');
+      const roadmapData = normalizeRoadmap(MockAIService.generateRoadmap(normProfile, DEMO_ROHITH_GOAL));
       setRoadmap(roadmapData);
-      setOpportunities(OpportunityService.matchOpportunities(DEMO_ROHITH_PROFILE, DEMO_ROHITH_GOAL));
-      setTrainingPrograms(OpportunityService.matchTraining(DEMO_ROHITH_PROFILE, DEMO_ROHITH_GOAL));
+      setOpportunities(normalizeOpportunities(OpportunityService.matchOpportunities(normProfile, DEMO_ROHITH_GOAL)));
+      setTrainingPrograms(normalizeTrainingPrograms(OpportunityService.matchTraining(normProfile, DEMO_ROHITH_GOAL)));
       setEnterprisePathway(OpportunityService.getEnterprisePathway('solar'));
       setActiveJourneyStep(4);
       setStage('main_app');
       setActiveTab('home');
+      setHasCompletedOnboarding(true);
       setConversationHistory([
         {
           id: 'msg-solar-1',
@@ -503,20 +589,22 @@ export const SkillBridgeProvider = ({ children }: { children: ReactNode }) => {
           timestamp: Date.now()
         }
       ]);
-      AdminStore.syncActiveProfile(DEMO_ROHITH_PROFILE, '9876543210', DEMO_ROHITH_GOAL, roadmapData);
+      AdminStore.syncActiveProfile(normProfile, '9876543210', DEMO_ROHITH_GOAL, roadmapData);
     } else {
-      setProfile({ ...DEMO_ANANYA_PROFILE });
-      setMobileNumber(DEMO_ANANYA_PROFILE.mobile || '9830011223');
+      const normProfile = normalizeProfile(DEMO_ANANYA_PROFILE);
+      setProfile(normProfile);
+      setMobileNumber(normProfile.mobile || '9830011223');
       setCareerGoal(DEMO_ANANYA_GOAL);
-      setSelectedLanguage('bn');
-      const roadmapData = MockAIService.generateRoadmap(DEMO_ANANYA_PROFILE, DEMO_ANANYA_GOAL);
+      if (!selectedLanguage) setSelectedLanguage('bn');
+      const roadmapData = normalizeRoadmap(MockAIService.generateRoadmap(normProfile, DEMO_ANANYA_GOAL));
       setRoadmap(roadmapData);
-      setOpportunities(OpportunityService.matchOpportunities(DEMO_ANANYA_PROFILE, DEMO_ANANYA_GOAL));
-      setTrainingPrograms(OpportunityService.matchTraining(DEMO_ANANYA_PROFILE, DEMO_ANANYA_GOAL));
+      setOpportunities(normalizeOpportunities(OpportunityService.matchOpportunities(normProfile, DEMO_ANANYA_GOAL)));
+      setTrainingPrograms(normalizeTrainingPrograms(OpportunityService.matchTraining(normProfile, DEMO_ANANYA_GOAL)));
       setEnterprisePathway(OpportunityService.getEnterprisePathway('fashion'));
       setActiveJourneyStep(8); // Enterprise launch stage
       setStage('main_app');
       setActiveTab('home');
+      setHasCompletedOnboarding(true);
       setConversationHistory([
         {
           id: 'msg-tailor-1',
@@ -525,7 +613,7 @@ export const SkillBridgeProvider = ({ children }: { children: ReactNode }) => {
           timestamp: Date.now()
         }
       ]);
-      AdminStore.syncActiveProfile(DEMO_ANANYA_PROFILE, '9830011223', DEMO_ANANYA_GOAL, roadmapData);
+      AdminStore.syncActiveProfile(normProfile, '9830011223', DEMO_ANANYA_GOAL, roadmapData);
     }
   };
 
@@ -537,11 +625,12 @@ export const SkillBridgeProvider = ({ children }: { children: ReactNode }) => {
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch (e) {}
+    setHasCompletedOnboarding(false);
     setStage('splash');
     setActiveTab('home');
     setSelectedLanguage('en');
     setMobileNumber('');
-    setProfile(DEFAULT_PROFILE);
+    setProfile(normalizeProfile(DEFAULT_PROFILE));
     setCurrentQuestionIndex(0);
     setCareerGoal('');
     setRoadmap(null);
@@ -595,6 +684,8 @@ export const SkillBridgeProvider = ({ children }: { children: ReactNode }) => {
         opportunities,
         trainingPrograms,
         enterprisePathway,
+        opportunitiesSubView,
+        setOpportunitiesSubView,
         activeJourneyStep,
         setActiveJourneyStep,
         applyOpportunity,
@@ -613,6 +704,11 @@ export const SkillBridgeProvider = ({ children }: { children: ReactNode }) => {
         // Multi-channel Simulators
         activeSimulator,
         setActiveSimulator,
+
+        // Onboarding & Lifecycle
+        hasCompletedOnboarding,
+        setHasCompletedOnboarding,
+        isHydrated,
 
         // Demo Control
         selectedScenario,

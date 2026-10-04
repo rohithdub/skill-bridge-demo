@@ -7,6 +7,7 @@ import { ONBOARDING_QUESTIONS } from '@/lib/questions';
 import { getLocalizedQuestion, getUIText } from '@/lib/translations';
 import { VoiceWaveform } from './VoiceWaveform';
 import { SpeechService } from '@/lib/speechService';
+import { normalizeSkills } from '@/lib/normalizeProfile';
 import {
   Mic,
   MicOff,
@@ -57,7 +58,7 @@ export const VoiceAssistantOnboarding: React.FC = () => {
 
     // Reset inputs
     setTextInput('');
-    setSelectedMulti(currentQ.type === 'multi_choice' ? (profile.skills || []) : []);
+    setSelectedMulti(currentQ.type === 'multi_choice' ? normalizeSkills(profile.skills) : []);
     setLimitationSubState('prompt');
     setLimitationDetailText('');
 
@@ -94,7 +95,7 @@ export const VoiceAssistantOnboarding: React.FC = () => {
 
     // Update profile
     if (currentQ.field === 'skills') {
-      updateProfileField('skills', fieldValue);
+      updateProfileField('skills', normalizeSkills(fieldValue));
     } else if (currentQ.field === 'physicalLimitation') {
       updateProfileField('physicalLimitation', fieldValue);
     } else {
@@ -154,7 +155,7 @@ export const VoiceAssistantOnboarding: React.FC = () => {
         if (Array.isArray(currentQ.demoValue)) {
           simulatedVal = currentQ.demoValue.join(', ');
         } else if (typeof currentQ.demoValue === 'object') {
-          simulatedVal = 'No physical limitation';
+          simulatedVal = getUIText('noPhysicalLimitation', selectedLanguage);
         } else {
           simulatedVal = String(currentQ.demoValue);
         }
@@ -173,9 +174,27 @@ export const VoiceAssistantOnboarding: React.FC = () => {
       ) || transcript;
       advanceToNext(transcript, matched);
     } else if (currentQ.type === 'multi_choice') {
-      advanceToNext(transcript, [transcript]);
+      advanceToNext(transcript, normalizeSkills(transcript));
     } else if (currentQ.type === 'special_limitation') {
-      if (transcript.toLowerCase().includes('yes')) {
+      const lower = transcript.toLowerCase().trim();
+      const affirmativeKeywords = [
+        'yes', 'yeah', 'yep', 'true', 'correct',
+        'ஆம்', 'ஆமாம்', 'உண்டு', 'இருக்கிறது',
+        'हाँ', 'हा', 'जी हाँ', 'हां', 'है',
+        'అవును', 'ఉంది', 'సరే',
+        'ಹೌದು', 'ಇದೆ', 'ಸರಿ',
+        'അതെ', 'ഉണ്ട്', 'ശരി',
+        'হ্যাঁ', 'হাঁ', 'আছে', 'ঠিক',
+        'होय', 'हो', 'आहे',
+        'હા', 'છે',
+        'ਹਾਂ', 'ਹਾਂਜੀ', 'ਹੈ',
+        'ହଁ', 'ହଁ ଆଜ୍ଞା', 'ଅଛି',
+        'হয়', 'আছে',
+        'ہاں', 'جی ہاں'
+      ];
+      const isAffirmative = affirmativeKeywords.some(word => lower.includes(word));
+
+      if (isAffirmative) {
         setLimitationSubState('details');
         speakText(getUIText('limitationPrompt', selectedLanguage), selectedLanguage);
       } else {
@@ -190,7 +209,12 @@ export const VoiceAssistantOnboarding: React.FC = () => {
   const handleTextSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!textInput.trim()) return;
-    advanceToNext(textInput.trim(), textInput.trim());
+    const value = textInput.trim();
+    if (currentQ.field === 'skills') {
+      advanceToNext(value, normalizeSkills(value));
+    } else {
+      advanceToNext(value, value);
+    }
     setTextInput('');
   };
 
@@ -209,22 +233,24 @@ export const VoiceAssistantOnboarding: React.FC = () => {
 
   const handleMultiSubmit = () => {
     if (selectedMulti.length === 0) return;
-    advanceToNext(selectedMulti.join(', '), selectedMulti);
+    advanceToNext(selectedMulti.join(', '), normalizeSkills(selectedMulti));
   };
 
   const handleLimitationChoice = (choice: string) => {
-    if (choice === 'Yes') {
+    const isYes = choice === 'Yes' || choice === getUIText('yes', selectedLanguage);
+    const isPreferNot = choice === 'Prefer not to say' || choice === getUIText('preferNotToSay', selectedLanguage);
+    if (isYes) {
       setLimitationSubState('details');
       speakText(getUIText('limitationPrompt', selectedLanguage), selectedLanguage);
-    } else if (choice === 'Prefer not to say') {
-      advanceToNext('Prefer not to say', { hasLimitation: false, details: 'Prefer not to say' });
+    } else if (isPreferNot) {
+      advanceToNext(getUIText('preferNotToSay', selectedLanguage), { hasLimitation: false, details: getUIText('preferNotToSay', selectedLanguage) });
     } else {
-      advanceToNext('No limitation', { hasLimitation: false });
+      advanceToNext(getUIText('noPhysicalLimitation', selectedLanguage), { hasLimitation: false });
     }
   };
 
   const handleLimitationDetailSubmit = () => {
-    const detail = limitationDetailText.trim() || 'Visual / mobility assistance needed';
+    const detail = limitationDetailText.trim() || getUIText('visualMobilityAssistance', selectedLanguage);
     advanceToNext(detail, { hasLimitation: true, details: detail });
   };
 
@@ -239,7 +265,7 @@ export const VoiceAssistantOnboarding: React.FC = () => {
             <span>{getUIText('aiVoiceOnboarding', selectedLanguage)}</span>
           </div>
           <span className="font-semibold text-sb-indigo bg-sb-lavender px-2.5 py-0.5 rounded-full border border-sb-blue/20">
-            {currentQuestionIndex + 1} of {ONBOARDING_QUESTIONS.length}
+            {currentQuestionIndex + 1} {getUIText('stepOf', selectedLanguage)} {ONBOARDING_QUESTIONS.length}
           </span>
         </div>
 
@@ -473,7 +499,7 @@ export const VoiceAssistantOnboarding: React.FC = () => {
                 ? 'bg-rose-500 text-white ring-4 ring-rose-300 ring-offset-2 animate-pulse'
                 : 'bg-sb-signature text-white shadow-sb-blue/30 hover:shadow-sb-blue/50'
             }`}
-            aria-label="Toggle voice input"
+            aria-label={getUIText('toggleVoiceInput', selectedLanguage)}
           >
             {isListening ? <MicOff className="w-7 h-7" /> : <Mic className="w-7 h-7" />}
           </motion.button>
@@ -509,14 +535,14 @@ export const VoiceAssistantOnboarding: React.FC = () => {
                 if (Array.isArray(currentQ.demoValue)) {
                   advanceToNext(currentQ.demoValue.join(', '), currentQ.demoValue);
                 } else if (typeof currentQ.demoValue === 'object') {
-                  advanceToNext('No limitation', currentQ.demoValue);
+                  advanceToNext(getUIText('noPhysicalLimitation', selectedLanguage), currentQ.demoValue);
                 } else {
                   advanceToNext(String(currentQ.demoValue), currentQ.demoValue);
                 }
               }
             }}
             className="h-11 px-3 rounded-xl bg-sb-lavender text-sb-indigo border border-sb-blue/20 text-xs font-semibold hover:bg-sb-blue/10 transition-colors shrink-0 cursor-pointer"
-            title="Auto-fill recommended sample answer"
+            title={getUIText('autoFillTitle', selectedLanguage)}
           >
             {getUIText('autoFill', selectedLanguage)}
           </button>

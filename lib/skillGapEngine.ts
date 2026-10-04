@@ -1,4 +1,5 @@
 import { UserProfile, SkillGapAnalysis } from '@/types/skillbridge';
+import { normalizeSkills } from '@/lib/normalizeProfile';
 
 interface CuratedSkillMapping {
   goalKeywords: string[];
@@ -16,7 +17,7 @@ interface CuratedSkillMapping {
   explanation: string;
 }
 
-const CURATED_MAPPINGS: CuratedSkillMapping[] = [
+export const CURATED_MAPPINGS: CuratedSkillMapping[] = [
   // 1. Electrical Assistant -> Solar PV Specialist (Scenario A)
   {
     goalKeywords: ['solar', 'pv', 'suryamitra', 'renewable', 'clean energy'],
@@ -208,7 +209,8 @@ export class SkillGapEngine {
 
     if (match) {
       // Blend user's specific declared skills if provided
-      const userSkills = profile.skills.length > 0 ? profile.skills : match.transferable;
+      const skillsArray = normalizeSkills(profile.skills);
+      const userSkills = skillsArray.length > 0 ? skillsArray : match.transferable;
       const combinedTransferable = Array.from(new Set([...match.transferable.slice(0, 3), ...userSkills.slice(0, 2)]));
 
       return {
@@ -231,7 +233,8 @@ export class SkillGapEngine {
     // 2. Synthesize dynamic fallback analysis
     const job = profile.currentJob || 'Current Occupation';
     const goal = targetGoal || 'Modern Technical Trade';
-    const statedSkills = profile.skills.length > 0 ? profile.skills : ['Practical work experience', 'Customer interaction'];
+    const skillsArrayFallback = normalizeSkills(profile.skills);
+    const statedSkills = skillsArrayFallback.length > 0 ? skillsArrayFallback : ['Practical work experience', 'Customer interaction'];
 
     return {
       careerGoal: goal,

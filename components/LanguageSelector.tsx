@@ -6,15 +6,13 @@ import { useSkillBridge } from '@/context/SkillBridgeContext';
 import { SUPPORTED_LANGUAGES } from '@/lib/questions';
 import { SupportedLanguage } from '@/types/skillbridge';
 import { SpeechService } from '@/lib/speechService';
+import { getUIText } from '@/lib/translations';
 import { Check, Globe, ArrowRight, Volume2, Search, X, Sparkles } from 'lucide-react';
 
 export const LanguageSelector: React.FC = () => {
   const { selectedLanguage, setSelectedLanguage, setStage, speakText } = useSkillBridge();
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  useEffect(() => {
-    SpeechService.preloadGreetings();
-  }, []);
 
   const handleSelectLanguage = (lang: SupportedLanguage, greeting: string) => {
     setSelectedLanguage(lang);
@@ -44,15 +42,15 @@ export const LanguageSelector: React.FC = () => {
           </div>
           <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#24135F] bg-[#EEEAFE] px-2.5 py-1 rounded-full border border-[#3159E8]/20">
             <Sparkles className="w-3 h-3 text-[#3159E8]" />
-            <span>{SUPPORTED_LANGUAGES.length} Indian Languages</span>
+            <span>{SUPPORTED_LANGUAGES.length} {getUIText('indianLanguages', selectedLanguage)}</span>
           </div>
         </div>
 
         <h1 className="text-2xl font-bold text-[#10152E] tracking-tight">
-          Choose your language
+          {getUIText('chooseLanguageTitle', selectedLanguage)}
         </h1>
         <p className="text-slate-500 text-xs mt-0.5">
-          Select your mother tongue or preferred language for AI voice conversations.
+          {getUIText('chooseLanguageSubtitle', selectedLanguage)}
         </p>
 
         {/* Search Bar */}
@@ -62,7 +60,7 @@ export const LanguageSelector: React.FC = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search language (e.g. Hindi, Bengali, Tamil)..."
+            placeholder={getUIText('searchLanguagePlaceholder', selectedLanguage)}
             className="w-full h-10 pl-9 pr-8 bg-white border border-slate-200 rounded-xl text-xs font-medium text-[#10152E] placeholder:text-slate-400 shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#3159E8] focus:border-transparent transition-all"
           />
           {searchQuery && (
@@ -116,7 +114,7 @@ export const LanguageSelector: React.FC = () => {
 
         {filteredLanguages.length === 0 && (
           <div className="col-span-2 text-center py-8 text-slate-400 text-xs">
-            No language matching &ldquo;{searchQuery}&rdquo;
+            {getUIText('noLanguageMatch', selectedLanguage)}: &ldquo;{searchQuery}&rdquo;
           </div>
         )}
       </div>
@@ -127,7 +125,7 @@ export const LanguageSelector: React.FC = () => {
           onClick={handleContinue}
           className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#24135F] via-[#3159E8] via-[#13B8B2] to-[#62E6C8] hover:opacity-95 active:scale-[0.98] text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg shadow-[#3159E8]/25 transition-all cursor-pointer border border-[#62E6C8]/30"
         >
-          <span>Continue</span>
+          <span>{getUIText('continueButton', selectedLanguage)}</span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>

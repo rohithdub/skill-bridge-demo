@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSkillBridge } from '@/context/SkillBridgeContext';
 import { VoiceWaveform } from './VoiceWaveform';
 import { SpeechService } from '@/lib/speechService';
 import { MockAIService } from '@/lib/mockAI';
+import { getUIText } from '@/lib/translations';
 import {
   Mic,
   MicOff,
@@ -26,6 +27,7 @@ export const VoiceAssistantTab: React.FC = () => {
     careerGoal,
     setStage,
     setActiveTab,
+    setOpportunitiesSubView,
     speakText,
     isSpeaking,
     isListening,
@@ -48,14 +50,27 @@ export const VoiceAssistantTab: React.FC = () => {
   const [isThinking, setIsThinking] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const suggestedPrompts = [
-    'What is my next step?',
-    'Find jobs near me',
-    'Show training',
-    'Schemes for my caste',
-    'I want self employment',
-    'Explain my roadmap'
-  ];
+  // Sync initial greeting with selected language
+  useEffect(() => {
+    setChatLog([
+      {
+        id: `init-${selectedLanguage}-${Date.now()}`,
+        sender: 'ai',
+        text: MockAIService.simulateVoiceResponse('', profile, roadmap || undefined, selectedLanguage).reply
+      }
+    ]);
+  }, [selectedLanguage]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const suggestedPrompts = useMemo(() => {
+    return [
+      getUIText('suggestedPromptNextStep', selectedLanguage),
+      getUIText('suggestedPromptNearJobs', selectedLanguage),
+      getUIText('suggestedPromptShowTraining', selectedLanguage),
+      getUIText('suggestedPromptCasteSchemes', selectedLanguage),
+      getUIText('suggestedPromptSelfEmployment', selectedLanguage),
+      getUIText('suggestedPromptExplainRoadmap', selectedLanguage)
+    ];
+  }, [selectedLanguage]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -97,8 +112,26 @@ export const VoiceAssistantTab: React.FC = () => {
           setTimeout(() => setActiveTab('home'), 1500);
         } else if (res.intentAction === 'NAV_ROADMAP') {
           setTimeout(() => setActiveTab('roadmap'), 1500);
-        } else if (res.intentAction === 'NAV_OPPORTUNITIES' || res.intentAction === 'SHOW_TRAINING' || res.intentAction === 'OPEN_ENTERPRISE' || res.intentAction === 'SHOW_APPLICATIONS') {
-          setTimeout(() => setActiveTab('opportunities'), 1500);
+        } else if (res.intentAction === 'NAV_OPPORTUNITIES') {
+          setTimeout(() => {
+            setOpportunitiesSubView('jobs');
+            setActiveTab('opportunities');
+          }, 1500);
+        } else if (res.intentAction === 'SHOW_TRAINING') {
+          setTimeout(() => {
+            setOpportunitiesSubView('training');
+            setActiveTab('opportunities');
+          }, 1500);
+        } else if (res.intentAction === 'OPEN_ENTERPRISE') {
+          setTimeout(() => {
+            setOpportunitiesSubView('enterprise');
+            setActiveTab('opportunities');
+          }, 1500);
+        } else if (res.intentAction === 'SHOW_APPLICATIONS') {
+          setTimeout(() => {
+            setOpportunitiesSubView('applications');
+            setActiveTab('opportunities');
+          }, 1500);
         } else if (res.intentAction === 'NAV_SCHEMES') {
           setTimeout(() => setActiveTab('schemes'), 1500);
         } else if (res.intentAction === 'NAV_PROFILE') {
@@ -157,7 +190,7 @@ export const VoiceAssistantTab: React.FC = () => {
             <h2 className="text-sm font-bold text-slate-900">Skill Bridge AI</h2>
             <p className="text-[11px] text-sb-teal font-semibold flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-sb-mint animate-pulse" />
-              Online & Ready to Guide
+              {getUIText('onlineReadyToGuide', selectedLanguage)}
             </p>
           </div>
         </div>
@@ -168,12 +201,12 @@ export const VoiceAssistantTab: React.FC = () => {
               {
                 id: `init-${Date.now()}`,
                 sender: 'ai',
-                text: "Conversation cleared. How can I help you?"
+                text: getUIText('conversationCleared', selectedLanguage)
               }
             ]);
           }}
           className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg text-xs cursor-pointer"
-          title="Clear conversation"
+          title={getUIText('clearConversation', selectedLanguage)}
         >
           <RotateCcw className="w-4 h-4" />
         </button>
@@ -215,7 +248,7 @@ export const VoiceAssistantTab: React.FC = () => {
             <span className="w-2 h-2 rounded-full bg-sb-indigo animate-bounce" />
             <span className="w-2 h-2 rounded-full bg-sb-blue animate-bounce [animation-delay:0.2s]" />
             <span className="w-2 h-2 rounded-full bg-sb-teal animate-bounce [animation-delay:0.4s]" />
-            <span>AI Assistant is thinking...</span>
+            <span>{getUIText('assistantThinking', selectedLanguage)}</span>
           </div>
         )}
 
@@ -225,10 +258,10 @@ export const VoiceAssistantTab: React.FC = () => {
       {/* Suggested Prompts Strip */}
       <div className="px-4 py-2 bg-slate-100/80 border-t border-slate-200/80">
         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
-          Suggested Questions:
+          {getUIText('suggestedQuestionsTitle', selectedLanguage)}
         </span>
         <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-          {suggestedPrompts.map((prompt) => (
+          {suggestedPrompts.map((prompt: string) => (
             <button
               key={prompt}
               onClick={() => handleSendPrompt(prompt)}
@@ -247,16 +280,16 @@ export const VoiceAssistantTab: React.FC = () => {
             {isListening ? (
               <span className="text-xs font-bold text-sb-blue animate-pulse flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-sb-blue animate-ping" />
-                Listening... Speak your question
+                {getUIText('listeningSpeakQuestion', selectedLanguage)}
               </span>
             ) : isSpeaking ? (
               <span className="text-xs font-bold text-sb-teal flex items-center gap-1.5">
                 <Volume2 className="w-3.5 h-3.5 animate-pulse" />
-                Speaking answer...
+                {getUIText('speakingAnswer', selectedLanguage)}
               </span>
             ) : (
               <span className="text-xs text-slate-400 font-medium">
-                Tap microphone to ask anything about your career
+                {getUIText('tapMicAskCareer', selectedLanguage)}
               </span>
             )}
           </div>
@@ -273,7 +306,7 @@ export const VoiceAssistantTab: React.FC = () => {
                 ? 'bg-rose-500 text-white ring-4 ring-rose-200 animate-pulse'
                 : 'bg-sb-signature hover:opacity-95 text-white shadow-sb-blue/30'
             }`}
-            aria-label="Ask AI voice assistant"
+            aria-label={getUIText('toggleVoiceInput', selectedLanguage)}
           >
             {isListening ? <MicOff className="w-7 h-7" /> : <Mic className="w-7 h-7" />}
           </motion.button>
@@ -291,7 +324,7 @@ export const VoiceAssistantTab: React.FC = () => {
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="Type a question for Skill Bridge..."
+            placeholder={getUIText('typeQuestionPlaceholder', selectedLanguage)}
             className="flex-1 h-11 px-4 rounded-xl bg-slate-100 border border-slate-200 text-slate-900 text-xs sm:text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sb-blue focus:bg-white transition-all"
           />
           <button

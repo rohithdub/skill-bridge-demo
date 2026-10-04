@@ -3,6 +3,20 @@
 import React, { useState } from 'react';
 import { useSkillBridge } from '@/context/SkillBridgeContext';
 import { RoadmapStep } from './RoadmapStep';
+import { normalizeRoadmap, toDisplayString } from '@/lib/normalization';
+import {
+  getRoadmapSummaryVoice,
+  getUIText,
+  getLocalizedJob,
+  getLocalizedGoalTitle,
+  getLocalizedSkill,
+  getLocalizedTask,
+  getLocalizedCertification,
+  getLocalizedPlacement,
+  getLocalizedEnterprise,
+  getLocalizedDuration,
+  getLocalizedSkillGapExplanation
+} from '@/lib/translations';
 import confetti from 'canvas-confetti';
 import {
   Route,
@@ -35,30 +49,32 @@ export const SkillRoadmap: React.FC = () => {
 
   const [activeTabFilter, setActiveTabFilter] = useState<'journey' | 'skillgap' | 'outcomes'>('journey');
 
-  if (!roadmap) {
+  const normalizedRoadmap = React.useMemo(() => normalizeRoadmap(roadmap), [roadmap]);
+
+  if (!normalizedRoadmap) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#F6F8FC]">
         <Route className="w-12 h-12 text-slate-300 mb-3" />
-        <h2 className="text-lg font-bold text-slate-700">No Roadmap Generated Yet</h2>
+        <h2 className="text-lg font-bold text-slate-700">{getUIText('noRoadmapTitle', selectedLanguage)}</h2>
         <p className="text-xs text-slate-400 mt-1 max-w-xs">
-          Select or speak your career goal to have Skill Bridge generate your custom pathway.
+          {getUIText('noRoadmapDesc', selectedLanguage)}
         </p>
         <button
           onClick={() => setStage('career_goal')}
           className="mt-4 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#24135F] via-[#3159E8] to-[#13B8B2] text-white font-bold text-xs shadow-md"
         >
-          Choose Career Goal
+          {getUIText('chooseCareerGoalBtn', selectedLanguage)}
         </button>
       </div>
     );
   }
 
-  const completedCount = roadmap.steps.filter(s => s.isCompleted).length;
-  const progressPercent = Math.round((completedCount / roadmap.steps.length) * 100);
+  const completedCount = normalizedRoadmap.steps.filter(s => s.isCompleted).length;
+  const progressPercent = Math.round((completedCount / (normalizedRoadmap.steps.length || 1)) * 100);
 
   const handleStepToggle = (id: string) => {
     toggleStepCompletion(id);
-    const step = roadmap.steps.find(s => s.id === id);
+    const step = normalizedRoadmap.steps.find(s => s.id === id);
     if (step && !step.isCompleted) {
       confetti({
         particleCount: 50,
@@ -69,7 +85,13 @@ export const SkillRoadmap: React.FC = () => {
   };
 
   const handleReadSummary = () => {
-    const summaryText = `Roadmap from ${roadmap.currentJob} to ${roadmap.careerGoal}. Skill gap analysis shows ${skillGap.coveragePercent}% baseline strength. ${skillGap.explanation} Total duration is ${roadmap.estimatedTotalMonths}.`;
+    const summaryText = getRoadmapSummaryVoice(
+      normalizedRoadmap.currentJob,
+      normalizedRoadmap.careerGoal,
+      skillGap.coveragePercent,
+      normalizedRoadmap.estimatedTotalMonths,
+      selectedLanguage
+    );
     speakText(summaryText, selectedLanguage);
   };
 
@@ -83,16 +105,16 @@ export const SkillRoadmap: React.FC = () => {
         <div className="flex items-center justify-between text-xs text-[#62E6C8] font-semibold mb-2">
           <div className="flex items-center gap-1.5 bg-[#24135F] px-2.5 py-1 rounded-full border border-[#3159E8]/40 shadow-xs">
             <Sparkles className="w-3.5 h-3.5 text-[#62E6C8]" />
-            <span>AI Skill Gap & Pathway Engine</span>
+            <span>{getUIText('roadmapEngineBadge', selectedLanguage)}</span>
           </div>
 
           <button
             onClick={() => setStage('career_goal')}
             className="flex items-center gap-1 text-[11px] text-[#EEEAFE] hover:text-white bg-[#10152E]/80 px-2.5 py-1 rounded-full border border-[#3159E8]/40 active:scale-95 cursor-pointer transition-colors"
-            title="Change career goal"
+            title={getUIText('btnChangeGoal', selectedLanguage)}
           >
             <RefreshCw className="w-3 h-3 text-[#62E6C8]" />
-            <span>Change Goal</span>
+            <span>{getUIText('btnChangeGoal', selectedLanguage)}</span>
           </button>
         </div>
 
@@ -100,10 +122,10 @@ export const SkillRoadmap: React.FC = () => {
         <div className="mt-2 flex items-center justify-between gap-2 min-w-0">
           <div className="flex-1 min-w-0">
             <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">
-              Current Work
+              {getUIText('currentWorkLabel', selectedLanguage)}
             </span>
             <p className="text-sm font-bold text-slate-200 truncate">
-              {roadmap.currentJob}
+              {toDisplayString(getLocalizedJob(normalizedRoadmap.currentJob, selectedLanguage))}
             </p>
           </div>
 
@@ -112,16 +134,16 @@ export const SkillRoadmap: React.FC = () => {
               <ArrowRight className="w-4 h-4 stroke-[3]" />
             </div>
             <span className="text-[8.5px] font-black uppercase text-[#62E6C8] tracking-tighter mt-0.5">
-              {skillGap.coveragePercent}% Ready
+              {skillGap.coveragePercent}% {getUIText('readyBadge', selectedLanguage)}
             </span>
           </div>
 
           <div className="flex-1 text-right min-w-0">
             <span className="text-[10px] uppercase font-bold tracking-wider text-[#62E6C8] block mb-0.5">
-              Target Goal
+              {getUIText('targetGoalLabel', selectedLanguage)}
             </span>
             <p className="text-base font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-[#62E6C8] to-[#13B8B2] truncate">
-              {roadmap.careerGoal}
+              {toDisplayString(getLocalizedGoalTitle(normalizedRoadmap.careerGoal, selectedLanguage))}
             </p>
           </div>
         </div>
@@ -131,17 +153,17 @@ export const SkillRoadmap: React.FC = () => {
           <div className="flex items-center gap-2 bg-[#10152E]/80 p-2 rounded-xl border border-[#3159E8]/30 min-w-0">
             <Clock className="w-4 h-4 text-[#62E6C8] shrink-0" />
             <div className="min-w-0 flex-1">
-              <span className="text-[10px] text-slate-400 block">Duration</span>
-              <span className="font-bold text-white break-words">{roadmap.estimatedTotalMonths}</span>
+              <span className="text-[10px] text-slate-400 block">{getUIText('durationLabel', selectedLanguage)}</span>
+              <span className="font-bold text-white break-words">{toDisplayString(getLocalizedDuration(normalizedRoadmap.estimatedTotalMonths, selectedLanguage), normalizedRoadmap.estimatedTotalMonths)}</span>
             </div>
           </div>
 
           <div className="flex items-center gap-2 bg-[#10152E]/80 p-2 rounded-xl border border-[#3159E8]/30 min-w-0">
             <Award className="w-4 h-4 text-[#13B8B2] shrink-0" />
             <div className="min-w-0 flex-1">
-              <span className="text-[10px] text-slate-400 block">Income Potential</span>
+              <span className="text-[10px] text-slate-400 block">{getUIText('incomePotentialLabel', selectedLanguage)}</span>
               <span className="font-bold text-[#62E6C8] text-[11px] leading-tight block truncate">
-                {roadmap.potentialSalaryGrowth}
+                {normalizedRoadmap.potentialSalaryGrowth}
               </span>
             </div>
           </div>
@@ -157,7 +179,7 @@ export const SkillRoadmap: React.FC = () => {
               />
             </div>
             <span className="text-slate-300 font-semibold text-[11px]">
-              {completedCount} of {roadmap.steps.length} completed
+              {completedCount} / {normalizedRoadmap.steps.length} {getUIText('completedProgress', selectedLanguage)}
             </span>
           </div>
 
@@ -166,7 +188,7 @@ export const SkillRoadmap: React.FC = () => {
             className="flex items-center gap-1 text-[11px] font-semibold text-[#62E6C8] hover:text-white bg-[#24135F] px-2.5 py-1 rounded-full border border-[#3159E8]/40 cursor-pointer transition-colors"
           >
             <Volume2 className="w-3.5 h-3.5" />
-            <span>Listen</span>
+            <span>{getUIText('btnListen', selectedLanguage)}</span>
           </button>
         </div>
       </div>
@@ -182,7 +204,7 @@ export const SkillRoadmap: React.FC = () => {
           }`}
         >
           <Route className="w-3.5 h-3.5 text-[#3159E8]" />
-          <span>Roadmap</span>
+          <span>{getUIText('tabRoadmap', selectedLanguage)}</span>
         </button>
 
         <button
@@ -194,7 +216,7 @@ export const SkillRoadmap: React.FC = () => {
           }`}
         >
           <Zap className="w-3.5 h-3.5 text-[#13B8B2]" />
-          <span>Skill Gap</span>
+          <span>{getUIText('tabSkillGap', selectedLanguage)}</span>
         </button>
 
         <button
@@ -206,7 +228,7 @@ export const SkillRoadmap: React.FC = () => {
           }`}
         >
           <Briefcase className="w-3.5 h-3.5 text-amber-500" />
-          <span>Outcomes</span>
+          <span>{getUIText('tabOutcomes', selectedLanguage)}</span>
         </button>
       </div>
 
@@ -224,18 +246,18 @@ export const SkillRoadmap: React.FC = () => {
                 <Briefcase className="w-3.5 h-3.5 text-[#62E6C8]" />
               </div>
               <div>
-                <span className="text-[10px] font-bold uppercase text-slate-400">START POSITION</span>
-                <p className="font-bold text-xs text-[#10152E]">{roadmap.currentJob}</p>
+                <span className="text-[10px] font-bold uppercase text-slate-400">{getUIText('startPosition', selectedLanguage)}</span>
+                <p className="font-bold text-xs text-[#10152E]">{toDisplayString(getLocalizedJob(normalizedRoadmap.currentJob, selectedLanguage))}</p>
               </div>
             </div>
 
             {/* Steps 1 to 5 Journey Flow */}
             <div className="flex flex-col">
-              {roadmap.steps.map((step, idx) => (
+              {normalizedRoadmap.steps.map((step, idx) => (
                 <RoadmapStep
-                  key={step.id}
+                  key={step.id || `step-${idx}`}
                   step={step}
-                  isLast={idx === roadmap.steps.length - 1}
+                  isLast={idx === normalizedRoadmap.steps.length - 1}
                   onToggleComplete={handleStepToggle}
                 />
               ))}
@@ -248,15 +270,15 @@ export const SkillRoadmap: React.FC = () => {
               </div>
               <div className="flex-1">
                 <span className="text-[10px] font-extrabold uppercase text-[#13B8B2] tracking-wider">
-                  GOAL DESTINATION
+                  {getUIText('goalDestination', selectedLanguage)}
                 </span>
                 <h4 className="font-extrabold text-sm text-[#10152E]">
-                  Certified {roadmap.careerGoal}
+                  {getUIText('certifiedLabel', selectedLanguage)} {toDisplayString(getLocalizedGoalTitle(normalizedRoadmap.careerGoal, selectedLanguage))}
                 </h4>
                 <p className="text-[11px] text-slate-600 font-medium">
                   {profile.employmentPreference === 'Self-employment'
-                    ? 'Autonomous Enterprise & Client Retainers'
-                    : 'Formal Wage Employment with Upward Mobility'}
+                    ? getUIText('autonomousEnterpriseDesc', selectedLanguage)
+                    : getUIText('formalWageDesc', selectedLanguage)}
                 </p>
               </div>
             </div>
@@ -266,7 +288,7 @@ export const SkillRoadmap: React.FC = () => {
               onClick={() => setActiveTab('opportunities')}
               className="mt-3 w-full py-2.5 rounded-2xl bg-gradient-to-r from-[#24135F] via-[#3159E8] to-[#13B8B2] text-white text-xs font-bold shadow-sm flex items-center justify-center gap-2"
             >
-              <span>Explore Matched Training & Vacancies</span>
+              <span>{getUIText('exploreVacanciesBtn', selectedLanguage)}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -282,10 +304,10 @@ export const SkillRoadmap: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-xs font-extrabold text-[#24135F]">
                   <Zap className="w-4 h-4 text-[#13B8B2] fill-[#13B8B2]" />
-                  <span>Explainable Skill Gap Assessment</span>
+                  <span>{getUIText('explainableAssessment', selectedLanguage)}</span>
                 </div>
                 <span className="text-[10px] font-bold bg-[#24135F] text-white px-2 py-0.5 rounded-full">
-                  {skillGap.coveragePercent}% Current Coverage
+                  {skillGap.coveragePercent}% {getUIText('currentCoverage', selectedLanguage)}
                 </span>
               </div>
 
@@ -298,7 +320,7 @@ export const SkillRoadmap: React.FC = () => {
               </div>
 
               <p className="text-xs text-slate-700 leading-relaxed font-medium pt-1">
-                &ldquo;{skillGap.explanation}&rdquo;
+                &ldquo;{toDisplayString(getLocalizedSkillGapExplanation(skillGap.explanation, normalizedRoadmap.currentJob, normalizedRoadmap.careerGoal, selectedLanguage), skillGap.explanation)}&rdquo;
               </p>
             </div>
 
@@ -306,13 +328,13 @@ export const SkillRoadmap: React.FC = () => {
             <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-2">
               <h4 className="font-bold text-xs text-[#10152E] uppercase tracking-wider flex items-center gap-1.5">
                 <CheckCircle className="w-4 h-4 text-emerald-600" />
-                <span>Transferable Skills You Already Have ({skillGap.transferableSkills.length})</span>
+                <span>{getUIText('transferableSkillsTitle', selectedLanguage)} ({skillGap.transferableSkills.length})</span>
               </h4>
               <div className="grid grid-cols-1 gap-1.5">
                 {skillGap.transferableSkills.map((ts, idx) => (
                   <div key={idx} className="flex items-center gap-2 bg-emerald-50/70 p-2 rounded-xl border border-emerald-200 text-xs font-medium text-emerald-950">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0" />
-                    <span>{ts}</span>
+                    <span>{getLocalizedSkill(ts, selectedLanguage)}</span>
                   </div>
                 ))}
               </div>
@@ -322,13 +344,13 @@ export const SkillRoadmap: React.FC = () => {
             <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-2">
               <h4 className="font-bold text-xs text-[#10152E] uppercase tracking-wider flex items-center gap-1.5">
                 <Zap className="w-4 h-4 text-[#3159E8]" />
-                <span>Skill Gaps to Bridge in Training ({skillGap.skillGaps.length})</span>
+                <span>{getUIText('skillGapsTitle', selectedLanguage)} ({skillGap.skillGaps.length})</span>
               </h4>
               <div className="grid grid-cols-1 gap-1.5">
                 {skillGap.skillGaps.map((gap, idx) => (
                   <div key={idx} className="flex items-center gap-2 bg-[#EEEAFE]/70 p-2 rounded-xl border border-[#3159E8]/20 text-xs font-medium text-[#24135F]">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#3159E8] shrink-0" />
-                    <span>{gap}</span>
+                    <span>{getLocalizedSkill(gap, selectedLanguage)}</span>
                   </div>
                 ))}
               </div>
@@ -338,15 +360,15 @@ export const SkillRoadmap: React.FC = () => {
             <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-2">
               <h4 className="font-bold text-xs text-[#10152E] uppercase tracking-wider flex items-center gap-1.5">
                 <FileCheck className="w-4 h-4 text-slate-700" />
-                <span>Required Practical Certification Tasks</span>
+                <span>{getUIText('certificationTasksTitle', selectedLanguage)}</span>
               </h4>
               <ul className="text-xs text-slate-700 space-y-1.5 list-disc list-inside">
                 {skillGap.practicalTasks.map((task, idx) => (
-                  <li key={idx} className="leading-snug">{task}</li>
+                  <li key={idx} className="leading-snug">{getLocalizedTask(task, selectedLanguage)}</li>
                 ))}
               </ul>
               <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
-                <span>Certification: {skillGap.certificationRequirement}</span>
+                <span>{getUIText('certificationLabel', selectedLanguage)}: {getLocalizedCertification(skillGap.certificationRequirement, selectedLanguage)}</span>
               </div>
             </div>
           </div>
@@ -361,12 +383,12 @@ export const SkillRoadmap: React.FC = () => {
             <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-2">
               <h4 className="font-bold text-xs text-[#10152E] uppercase tracking-wider flex items-center gap-1.5">
                 <Briefcase className="w-4 h-4 text-[#3159E8]" />
-                <span>Wage Employment Opportunities</span>
+                <span>{getUIText('wageEmploymentTitle', selectedLanguage)}</span>
               </h4>
               <div className="space-y-1.5">
                 {skillGap.employmentOptions.map((opt, idx) => (
                   <div key={idx} className="p-2.5 rounded-xl bg-[#F6F8FC] border border-slate-200 text-xs font-semibold text-slate-800 flex items-center justify-between">
-                    <span>{opt}</span>
+                    <span>{toDisplayString(getLocalizedPlacement(opt, selectedLanguage))}</span>
                     <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
                   </div>
                 ))}
@@ -377,14 +399,14 @@ export const SkillRoadmap: React.FC = () => {
             <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-2">
               <h4 className="font-bold text-xs text-[#10152E] uppercase tracking-wider flex items-center gap-1.5">
                 <Store className="w-4 h-4 text-amber-600" />
-                <span>Self-Employment & Micro-Enterprise Pathways</span>
+                <span>{getUIText('enterprisePathwaysTitle', selectedLanguage)}</span>
               </h4>
               <div className="space-y-1.5">
                 {skillGap.enterpriseOptions.map((opt, idx) => (
                   <div key={idx} className="p-2.5 rounded-xl bg-amber-50/60 border border-amber-200 text-xs font-semibold text-amber-950 flex items-center justify-between">
-                    <span>{opt}</span>
+                    <span>{toDisplayString(getLocalizedEnterprise(opt, selectedLanguage))}</span>
                     <span className="text-[10px] text-amber-800 font-bold bg-amber-200 px-2 py-0.5 rounded">
-                      Grant Eligible
+                      {getUIText('grantEligibleBadge', selectedLanguage)}
                     </span>
                   </div>
                 ))}
@@ -395,7 +417,7 @@ export const SkillRoadmap: React.FC = () => {
               onClick={() => setActiveTab('opportunities')}
               className="mt-2 w-full py-2.5 rounded-xl bg-[#24135F] text-white text-xs font-bold"
             >
-              Open Opportunities & Grants Hub
+              {getUIText('openOppsHubBtn', selectedLanguage)}
             </button>
           </div>
         )}

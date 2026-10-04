@@ -1,6 +1,6 @@
 'use client';
 
-// Speech Service with Web Speech API and robust safety fallbacks
+// Speech Service with high-fidelity server TTS pipeline, Blob/Object-URL management, and robust safety fallbacks
 
 export class SpeechService {
   private static synth: SpeechSynthesis | null = null;
@@ -8,6 +8,10 @@ export class SpeechService {
   private static isRecognizing: boolean = false;
   private static cachedVoices: SpeechSynthesisVoice[] = [];
   private static isInitialized: boolean = false;
+  private static currentAudio: HTMLAudioElement | null = null;
+  private static currentObjectUrl: string | null = null;
+  private static audioBlobCache: Map<string, Blob> = new Map();
+  private static currentRequestId: number = 0;
 
   private static getSynth(): SpeechSynthesis | null {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -23,11 +27,11 @@ export class SpeechService {
     return null;
   }
 
-  private static getBcp47Lang(lang: string): string {
+  public static getBcp47Lang(lang: string): string {
     const map: Record<string, string> = {
       en: 'en-IN',
-      ta: 'ta-IN',
       hi: 'hi-IN',
+      ta: 'ta-IN',
       te: 'te-IN',
       kn: 'kn-IN',
       ml: 'ml-IN',
@@ -43,219 +47,12 @@ export class SpeechService {
   }
 
   /**
-   * Plays a pleasant chime sound via Web Audio API as audio feedback
+   * Stop any ongoing speech playback (both HTML5 Audio and Web Speech Synthesis)
    */
-  public static playAudioFeedback(type: 'tap' | 'success' | 'greeting' = 'tap'): void {
-    if (typeof window === 'undefined') return;
-    try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      const now = ctx.currentTime;
-      if (type === 'greeting') {
-        osc.frequency.setValueAtTime(523.25, now); // C5
-        osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.15); // E5
-        osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.3); // G5
-        gain.gain.setValueAtTime(0.12, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
-        osc.start(now);
-        osc.stop(now + 0.45);
-      } else {
-        osc.frequency.setValueAtTime(440, now);
-        osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
-        gain.gain.setValueAtTime(0.08, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-        osc.start(now);
-        osc.stop(now + 0.25);
-      }
-    } catch (e) {
-      // AudioContext not allowed or unsupported
-    }
-  }
-
-  private static currentAudio: HTMLAudioElement | null = null;
-  private static audioCache: Map<string, HTMLAudioElement> = new Map();
-
-  /**
-   * Pre-loads the greeting audio for all 6 languages so taps on the language selector respond instantly
-   */
-  public static preloadGreetings(): void {
-    if (typeof window === 'undefined') return;
-    const greetings: Array<{ code: string; text: string }> = [
-      { code: 'en', text: 'Welcome to Skill Bridge' },
-      { code: 'ta', text: 'ஸ்கில் பிரிட்ஜுக்கு வரவேற்கிறோம்' },
-      { code: 'hi', text: 'स्किल ब्रिज में आपका स्वागत है' },
-      { code: 'te', text: 'స్కిల్ బ్రిడ్జ్‌కి స్వాగతం' },
-      { code: 'kn', text: 'ಸ್ಕಿಲ್ ಬ್ರಿಡ್ಜ್‌ಗೆ ಸುಸ್ವಾಗತ' },
-      { code: 'ml', text: 'സ്കിൽ ബ്രിഡ്ജിലേക്ക് സ്വാഗതം' }
-    ];
-
-    greetings.forEach(({ code, text }) => {
-      const url = `/api/tts?lang=${encodeURIComponent(code)}&text=${encodeURIComponent(text)}`;
-      if (!this.audioCache.has(url)) {
-        try {
-          const audio = new Audio();
-          audio.preload = 'auto';
-          audio.src = url;
-          this.audioCache.set(url, audio);
-        } catch (e) {
-          // ignore prefetch failure
-        }
-      }
-    });
-  }
-
-  /**
-   * Plays speech using the server-backed TTS API
-   */
-  public static playTtsAudio(
-    text: string,
-    lang: string,
-    onEnd?: () => void,
-    onError?: (err: any) => void
-  ): void {
-    if (typeof window === 'undefined') return;
-
-    // Stop any existing speech
-    this.stopSpeaking();
-
-    const langCode = lang.toLowerCase().split('-')[0];
-    const url = `/api/tts?lang=${encodeURIComponent(langCode)}&text=${encodeURIComponent(text)}`;
-
-    let audio: HTMLAudioElement;
-    if (this.audioCache.has(url)) {
-      audio = this.audioCache.get(url)!;
-      audio.currentTime = 0;
-    } else {
-      audio = new Audio(url);
-      // Cache up to 30 audio objects for quick playback
-      if (this.audioCache.size < 30) {
-        this.audioCache.set(url, audio);
-      }
-    }
-
-    this.currentAudio = audio;
-
-    let finished = false;
-    const cleanup = () => {
-      if (!finished) {
-        finished = true;
-        if (this.currentAudio === audio) {
-          this.currentAudio = null;
-        }
-        if (onEnd) onEnd();
-      }
-    };
-
-    audio.onended = () => {
-      cleanup();
-    };
-
-    audio.onerror = (e) => {
-      console.warn('TTS Audio playback error:', e);
-      if (!finished) {
-        finished = true;
-        if (this.currentAudio === audio) {
-          this.currentAudio = null;
-        }
-        this.playAudioFeedback('greeting');
-        if (onError) onError(e);
-        else if (onEnd) onEnd();
-      }
-    };
-
-    // Safety timeout in case audio stalls
-    const safetyTimer = setTimeout(() => {
-      cleanup();
-    }, 12000);
-
-    const prevOnEnded = audio.onended;
-    audio.onended = (ev) => {
-      clearTimeout(safetyTimer);
-      if (prevOnEnded) (prevOnEnded as any)(ev);
-    };
-
-    audio.play().catch((err) => {
-      clearTimeout(safetyTimer);
-      console.warn('Audio play request was interrupted or failed:', err);
-      // If browser blocked autoplay or failed, provide chime feedback
-      this.playAudioFeedback('greeting');
-      cleanup();
-    });
-  }
-
-  public static speak(
-    text: string, 
-    lang: string = 'en-IN', 
-    onEnd?: () => void,
-    onError?: (err: any) => void
-  ): void {
-    this.stopSpeaking();
-
-    const targetLang = this.getBcp47Lang(lang);
-    const langPrefix = targetLang.split('-')[0].toLowerCase();
-
-    const synth = this.getSynth();
-    const voices = synth ? (this.cachedVoices.length > 0 ? this.cachedVoices : synth.getVoices()) : [];
-
-    // Find if the browser has a native voice installed for this language
-    const matchedVoice = voices.find(v => {
-      const vLang = v.lang.toLowerCase().replace('_', '-');
-      return vLang === targetLang.toLowerCase() || vLang.startsWith(langPrefix);
-    });
-
-    // If native voice is not installed (typical for ta, te, kn, ml on Windows Chrome),
-    // immediately use our high-fidelity TTS audio service!
-    if (!matchedVoice) {
-      this.playTtsAudio(text, langPrefix, onEnd, onError);
-      return;
-    }
-
-    // If a native voice exists (e.g. English, or Hindi if installed in OS/browser)
-    try {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = targetLang;
-      utterance.rate = 0.95;
-      utterance.pitch = 1.05;
-      utterance.voice = matchedVoice;
-
-      let finished = false;
-      const safeEnd = () => {
-        if (!finished) {
-          finished = true;
-          if (onEnd) onEnd();
-        }
-      };
-
-      utterance.onend = () => {
-        safeEnd();
-      };
-
-      utterance.onerror = (e) => {
-        console.warn('Native speech synthesis error, falling back to TTS Audio:', e);
-        // Fall back to server TTS if native synthesis fails
-        this.playTtsAudio(text, langPrefix, onEnd, onError);
-      };
-
-      // Safety timeout to prevent stuck speaking animation
-      setTimeout(() => {
-        safeEnd();
-      }, 8000);
-
-      synth!.speak(utterance);
-    } catch (e) {
-      console.warn('SpeechSynthesis error, falling back to TTS Audio:', e);
-      this.playTtsAudio(text, langPrefix, onEnd, onError);
-    }
-  }
-
   public static stopSpeaking(): void {
+    // Invalidate any ongoing in-flight request
+    this.currentRequestId++;
+
     if (this.currentAudio) {
       try {
         this.currentAudio.pause();
@@ -266,6 +63,15 @@ export class SpeechService {
       this.currentAudio = null;
     }
 
+    if (this.currentObjectUrl) {
+      try {
+        URL.revokeObjectURL(this.currentObjectUrl);
+      } catch (e) {
+        // ignore
+      }
+      this.currentObjectUrl = null;
+    }
+
     const synth = this.getSynth();
     if (synth) {
       try {
@@ -274,6 +80,211 @@ export class SpeechService {
         // ignore
       }
     }
+  }
+
+  /**
+   * Plays speech using the primary server-backed TTS API (/api/tts)
+   * Converts the server response into a complete Blob before initiating HTMLAudioElement playback.
+   * If server TTS fails or is unsupported for the language, deliberately attempts browser SpeechSynthesis
+   * with a strictly matching voice.
+   */
+  public static async playTtsAudio(
+    text: string,
+    lang: string,
+    onEnd?: () => void,
+    onError?: (err: any) => void
+  ): Promise<void> {
+    if (typeof window === 'undefined') return;
+
+    // 1. Cancel and cleanup any currently playing or in-flight speech
+    this.stopSpeaking();
+    const requestId = this.currentRequestId;
+
+    const langCode = lang.toLowerCase().split('-')[0];
+    const cacheKey = `${langCode}:${text.trim()}`;
+    
+    let basePath = '';
+    if (typeof window !== 'undefined') {
+      const pathParts = window.location.pathname.split('/').filter(Boolean);
+      if (pathParts.length > 0 && (pathParts[0] === 'skill-bridge-demo' || pathParts[0] === 'skill-bridge')) {
+        basePath = `/${pathParts[0]}`;
+      }
+    }
+    const url = `${basePath}/api/tts?lang=${encodeURIComponent(langCode)}&text=${encodeURIComponent(text.trim())}`;
+
+    try {
+      let audioBlob: Blob;
+
+      if (this.audioBlobCache.has(cacheKey)) {
+        audioBlob = this.audioBlobCache.get(cacheKey)!;
+      } else {
+        const response = await fetch(url);
+
+        // Check if user switched language while fetch was in flight
+        if (requestId !== this.currentRequestId) {
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error(`TTS API returned status ${response.status} (${response.statusText})`);
+        }
+
+        audioBlob = await response.blob();
+
+        if (!audioBlob || audioBlob.size === 0) {
+          throw new Error('TTS API returned empty audio payload');
+        }
+
+        // Cache up to 40 audio blobs for instant re-play without network
+        if (this.audioBlobCache.size < 40) {
+          this.audioBlobCache.set(cacheKey, audioBlob);
+        }
+      }
+
+      // Check race condition again after blob read
+      if (requestId !== this.currentRequestId) {
+        return;
+      }
+
+      const objectUrl = URL.createObjectURL(audioBlob);
+      this.currentObjectUrl = objectUrl;
+
+      const audio = new Audio(objectUrl);
+      this.currentAudio = audio;
+
+      let finished = false;
+      const cleanup = () => {
+        if (!finished) {
+          finished = true;
+          if (this.currentAudio === audio) {
+            this.currentAudio = null;
+          }
+          if (this.currentObjectUrl === objectUrl) {
+            try {
+              URL.revokeObjectURL(objectUrl);
+            } catch (e) {}
+            this.currentObjectUrl = null;
+          }
+          if (onEnd) onEnd();
+        }
+      };
+
+      audio.onended = () => {
+        cleanup();
+      };
+
+      audio.onerror = (e) => {
+        console.warn(`[SkillBridge TTS Error] Audio element error for language "${langCode}":`, e);
+        if (!finished) {
+          finished = true;
+          if (this.currentAudio === audio) {
+            this.currentAudio = null;
+          }
+          if (this.currentObjectUrl === objectUrl) {
+            try {
+              URL.revokeObjectURL(objectUrl);
+            } catch (err) {}
+            this.currentObjectUrl = null;
+          }
+          if (onError) onError(e);
+          else if (onEnd) onEnd();
+        }
+      };
+
+      // Play audio
+      await audio.play();
+    } catch (error: any) {
+      if (requestId !== this.currentRequestId) {
+        return;
+      }
+
+      console.warn(`[SkillBridge TTS Error] Primary TTS service unavailable for language "${langCode}" (${error?.message || error}). Trying browser voice fallback...`);
+
+      // 2. Deliberate fallback to browser SpeechSynthesis ONLY if a strictly matching regional voice is installed
+      const fellBack = this.tryBrowserSpeechFallback(text, langCode, onEnd, onError);
+      if (!fellBack) {
+        console.warn(`[SkillBridge TTS] No matching speech voice available for language "${langCode}". UI remains fully interactive.`);
+        if (onError) onError(error);
+        else if (onEnd) onEnd();
+      }
+    }
+  }
+
+  /**
+   * Browser SpeechSynthesis fallback with strict regional language voice matching.
+   * Returns true if a genuine matching voice was found and spoken, false otherwise.
+   */
+  private static tryBrowserSpeechFallback(
+    text: string,
+    langCode: string,
+    onEnd?: () => void,
+    onError?: (err: any) => void
+  ): boolean {
+    const synth = this.getSynth();
+    if (!synth) return false;
+
+    const targetBcp47 = this.getBcp47Lang(langCode);
+    const langPrefix = langCode.toLowerCase();
+
+    const voices = this.cachedVoices.length > 0 ? this.cachedVoices : synth.getVoices();
+
+    // Look for a voice matching this specific language - NEVER match an English voice for regional languages
+    const matchedVoice = voices.find(v => {
+      const vLang = v.lang.toLowerCase().replace('_', '-');
+      return vLang === targetBcp47.toLowerCase() || vLang.startsWith(langPrefix);
+    });
+
+    if (!matchedVoice) {
+      return false;
+    }
+
+    try {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = targetBcp47;
+      utterance.voice = matchedVoice;
+      utterance.rate = 0.95;
+      utterance.pitch = 1.0;
+
+      let finished = false;
+      const safeEnd = () => {
+        if (!finished) {
+          finished = true;
+          if (onEnd) onEnd();
+        }
+      };
+
+      utterance.onend = safeEnd;
+      utterance.onerror = (e) => {
+        console.warn(`[SkillBridge TTS Error] Browser speech synthesis failed for "${langCode}":`, e);
+        if (!finished) {
+          finished = true;
+          if (onError) onError(e);
+          else if (onEnd) onEnd();
+        }
+      };
+
+      // Safety timeout to prevent stuck speaking state
+      setTimeout(safeEnd, 8000);
+
+      synth.speak(utterance);
+      return true;
+    } catch (e) {
+      console.warn(`[SkillBridge TTS Error] SpeechSynthesis exception for "${langCode}":`, e);
+      return false;
+    }
+  }
+
+  /**
+   * Main speak method: Server TTS is primary; Browser Speech is deliberate fallback.
+   */
+  public static speak(
+    text: string,
+    lang: string = 'en-IN',
+    onEnd?: () => void,
+    onError?: (err: any) => void
+  ): void {
+    const langPrefix = lang.toLowerCase().split('-')[0];
+    this.playTtsAudio(text, langPrefix, onEnd, onError);
   }
 
   public static startListening(

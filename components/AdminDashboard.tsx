@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSkillBridge } from '@/context/SkillBridgeContext';
+import { getUIText } from '@/lib/translations';
 import { AdminStore } from '@/lib/adminStore';
 import {
   LearnerAdminRecord,
@@ -63,7 +64,7 @@ type AdminTab =
   | 'reports';
 
 export const AdminDashboard: React.FC = () => {
-  const { setStage, profile, mobileNumber, careerGoal, roadmap } = useSkillBridge();
+  const { setStage, profile, mobileNumber, careerGoal, roadmap, selectedLanguage } = useSkillBridge();
   
   const [activeAdminTab, setActiveAdminTab] = useState<AdminTab>('overview');
   const [learners, setLearners] = useState<LearnerAdminRecord[]>([]);
@@ -341,17 +342,17 @@ export const AdminDashboard: React.FC = () => {
             <button
               onClick={() => AdminStore.exportLearnersCSV(learners)}
               className="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
-              title="Export CSV"
+              title={getUIText('exportCsvBtn', selectedLanguage)}
             >
               <Download className="w-3.5 h-3.5 text-[#62E6C8]" />
-              <span className="hidden sm:inline">Export</span>
+              <span className="hidden sm:inline">{getUIText('exportCsvBtn', selectedLanguage)}</span>
             </button>
             <button
               onClick={() => setStage('main_app')}
               className="px-2.5 py-1.5 rounded-lg bg-[#3159E8] hover:bg-[#24135F] text-white text-xs font-bold transition-colors cursor-pointer"
-              title="Switch to Beneficiary App"
+              title={getUIText('returnToAppBtn', selectedLanguage)}
             >
-              App View
+              {getUIText('appBtn', selectedLanguage)}
             </button>
           </div>
         </div>
@@ -359,16 +360,16 @@ export const AdminDashboard: React.FC = () => {
         {/* 10 Institutional Sections Tab Bar */}
         <div className="flex items-center gap-1 overflow-x-auto pt-2.5 pb-0.5 no-scrollbar text-xs">
           {[
-            { id: 'overview', label: 'Overview', icon: TrendingUp },
-            { id: 'beneficiaries', label: 'Beneficiaries', icon: Users },
-            { id: 'planning', label: 'Perspective Plans', icon: FileText },
-            { id: 'skills', label: 'Skill Demand', icon: Zap },
-            { id: 'training', label: 'Training Centers', icon: Building2 },
-            { id: 'placements', label: 'Placements', icon: Briefcase },
-            { id: 'enterprise', label: 'Enterprise Hub', icon: Store },
-            { id: 'coordination', label: 'Coordination', icon: CheckSquare },
-            { id: 'field_support', label: 'Field Support', icon: AlertCircle },
-            { id: 'reports', label: 'Reports', icon: Download }
+            { id: 'overview', label: getUIText('overviewTab', selectedLanguage), icon: TrendingUp },
+            { id: 'beneficiaries', label: getUIText('beneficiariesTab', selectedLanguage), icon: Users },
+            { id: 'planning', label: getUIText('planningTab', selectedLanguage), icon: FileText },
+            { id: 'skills', label: getUIText('skillsTab', selectedLanguage), icon: Zap },
+            { id: 'training', label: getUIText('trainingTab', selectedLanguage), icon: Building2 },
+            { id: 'placements', label: getUIText('placementsTab', selectedLanguage), icon: Briefcase },
+            { id: 'enterprise', label: getUIText('enterpriseTab', selectedLanguage), icon: Store },
+            { id: 'coordination', label: getUIText('coordinationTab', selectedLanguage), icon: CheckSquare },
+            { id: 'field_support', label: getUIText('fieldSupportTab', selectedLanguage), icon: AlertCircle },
+            { id: 'reports', label: getUIText('reportsTab', selectedLanguage), icon: Download }
           ].map(tab => {
             const Icon = tab.icon;
             const isActive = activeAdminTab === tab.id;

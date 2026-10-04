@@ -75,7 +75,7 @@ export const MobileNumberScreen: React.FC = () => {
     }
 
     if (otpState !== 'verified' && otp.filter(Boolean).length < 4) {
-      setError('Please wait for OTP verification or enter the 4-digit code');
+      setError(getUIText('waitOtpVerification', selectedLanguage));
       return;
     }
 
@@ -127,7 +127,7 @@ export const MobileNumberScreen: React.FC = () => {
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Mobile Number
+                {getUIText('mobileNumberLabel', selectedLanguage)}
               </label>
               <button
                 type="button"
@@ -183,18 +183,18 @@ export const MobileNumberScreen: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 text-xs font-bold text-[#10152E] uppercase tracking-wider">
                       <KeyRound className="w-3.5 h-3.5 text-[#3159E8]" />
-                      <span>OTP Verification</span>
+                      <span>{getUIText('otpVerification', selectedLanguage)}</span>
                     </div>
 
                     {otpState === 'verified' ? (
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#E4FAF5] text-[#13B8B2] border border-[#13B8B2]/40">
                         <CheckCircle2 className="w-3.5 h-3.5 text-[#13B8B2]" />
-                        <span>OTP Verified</span>
+                        <span>{getUIText('otpVerified', selectedLanguage)}</span>
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#EEEAFE] text-[#24135F]">
                         <span className="w-2 h-2 rounded-full bg-[#3159E8] animate-ping" />
-                        <span>Verifying SMS code...</span>
+                        <span>{getUIText('verifyingSmsCode', selectedLanguage)}</span>
                       </span>
                     )}
                   </div>
@@ -230,10 +230,10 @@ export const MobileNumberScreen: React.FC = () => {
                         <CheckCircle2 className="w-5 h-5 text-[#13B8B2] shrink-0" />
                         <div className="min-w-0 flex-1">
                           <span className="font-bold block text-xs break-words">
-                            OTP Verified for +91 {mobileNumber}
+                            {getUIText('otpVerifiedFor', selectedLanguage)} +91 {mobileNumber}
                           </span>
                           <span className="text-[11px] text-[#24135F] font-mono font-bold flex items-center gap-1 flex-wrap mt-0.5">
-                            <span className="text-slate-500 font-sans font-normal shrink-0">Citizen Serial ID:</span>
+                            <span className="text-slate-500 font-sans font-normal shrink-0">{getUIText('citizenSerialId', selectedLanguage)}:</span>
                             <span className="bg-white/80 px-1.5 py-0.5 rounded border border-[#3159E8]/30 text-[#3159E8] shrink-0">
                               {profile.serialId || 'TN-32-101'}
                             </span>
@@ -241,13 +241,13 @@ export const MobileNumberScreen: React.FC = () => {
                         </div>
                       </div>
                       <span className="text-[10px] font-bold text-[#13B8B2] bg-white px-2 py-0.5 rounded-md border border-[#13B8B2]/20 shrink-0">
-                        Auto-Confirmed
+                        {getUIText('autoConfirmed', selectedLanguage)}
                       </span>
                     </motion.div>
                   ) : (
                     <div className="flex items-center justify-between text-[11px] text-slate-400">
-                      <span>Sending SMS OTP to +91 {mobileNumber}...</span>
-                      <span className="text-[#3159E8] font-semibold">Auto-detecting</span>
+                      <span>{getUIText('sendingSmsOtp', selectedLanguage)} +91 {mobileNumber}...</span>
+                      <span className="text-[#3159E8] font-semibold">{getUIText('autoDetecting', selectedLanguage)}</span>
                     </div>
                   )}
 
@@ -282,7 +282,7 @@ export const MobileNumberScreen: React.FC = () => {
           }`}
         >
           <span>
-            {otpState === 'verified' ? 'Continue' : isNumberPlaced ? 'Verifying OTP...' : 'Enter Mobile Number'}
+            {otpState === 'verified' ? getUIText('continueButton', selectedLanguage) : isNumberPlaced ? getUIText('verifyingOtp', selectedLanguage) : getUIText('enterMobileNumber', selectedLanguage)}
           </span>
           <ArrowRight className="w-4 h-4" />
         </button>
@@ -293,7 +293,7 @@ export const MobileNumberScreen: React.FC = () => {
             type="button"
             onClick={() => setStage('admin_login')}
             className="w-full p-3 rounded-2xl bg-gradient-to-r from-[#10152E] via-[#24135F] to-[#10152E] hover:from-[#24135F] hover:to-[#3159E8] text-white font-bold text-xs flex items-center justify-between shadow-md transition-all active:scale-[0.98] cursor-pointer group border border-[#3159E8]/30"
-            title="Open Admin & Instructor Monitoring Portal"
+            title={getUIText('openAdminPortal', selectedLanguage)}
           >
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-[#3159E8]/20 text-[#62E6C8] flex items-center justify-center shrink-0 border border-[#3159E8]/30">
@@ -301,13 +301,13 @@ export const MobileNumberScreen: React.FC = () => {
               </div>
               <div className="text-left">
                 <div className="text-xs font-bold text-white group-hover:text-[#62E6C8] transition-colors flex items-center gap-1.5">
-                  <span>Admin Panel</span>
+                  <span>{getUIText('adminPanel', selectedLanguage)}</span>
                   <span className="text-[9px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-[#24135F] text-[#62E6C8] border border-[#13B8B2]/40">
-                    Supervisor
+                    {getUIText('supervisor', selectedLanguage)}
                   </span>
                 </div>
                 <div className="text-[10px] text-slate-300 font-normal">
-                  View registered learners, course tracks & status
+                  {getUIText('viewRegisteredLearners', selectedLanguage)}
                 </div>
               </div>
             </div>

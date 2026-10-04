@@ -4,13 +4,14 @@ import React, { ReactNode, useState, useEffect } from 'react';
 import { Wifi, Battery, Signal, Maximize2, Minimize2 } from 'lucide-react';
 import { DemoToolbar } from './DemoToolbar';
 import { useSkillBridge } from '@/context/SkillBridgeContext';
+import { getUIText } from '@/lib/translations';
 
 interface MobileFrameProps {
   children: ReactNode;
 }
 
 export const MobileFrame: React.FC<MobileFrameProps> = ({ children }) => {
-  const { stage } = useSkillBridge();
+  const { stage, selectedLanguage, isHydrated } = useSkillBridge();
   const [time, setTime] = useState<string>('09:41');
   const [isWideAdmin, setIsWideAdmin] = useState<boolean>(false);
 
@@ -26,7 +27,7 @@ export const MobileFrame: React.FC<MobileFrameProps> = ({ children }) => {
     return () => clearInterval(interval);
   }, []);
 
-  const isAdminDashboard = stage === 'admin_dashboard';
+  const isAdminDashboard = isHydrated && stage === 'admin_dashboard';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#10152E] via-[#24135F] to-[#10152E] flex flex-col items-center justify-center p-0 md:py-6 md:px-4 font-sans antialiased text-[#10152E] selection:bg-[#3159E8] selection:text-white transition-all duration-300">
@@ -52,17 +53,17 @@ export const MobileFrame: React.FC<MobileFrameProps> = ({ children }) => {
             <button
               onClick={() => setIsWideAdmin(!isWideAdmin)}
               className="hidden md:flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#10152E] text-white text-[10px] font-semibold hover:bg-[#24135F] transition-all cursor-pointer shadow-xs border border-[#3159E8]/40"
-              title={isWideAdmin ? 'Switch to mobile view' : 'Expand to wide dashboard'}
+              title={isWideAdmin ? getUIText('switchToMobileView', selectedLanguage) : getUIText('expandToWideDashboard', selectedLanguage)}
             >
               {isWideAdmin ? (
                 <>
                   <Minimize2 className="w-3 h-3 text-[#62E6C8]" />
-                  <span>Mobile View</span>
+                  <span>{getUIText('mobileView', selectedLanguage)}</span>
                 </>
               ) : (
                 <>
                   <Maximize2 className="w-3 h-3 text-[#62E6C8]" />
-                  <span>Expand Wide</span>
+                  <span>{getUIText('expandWide', selectedLanguage)}</span>
                 </>
               )}
             </button>

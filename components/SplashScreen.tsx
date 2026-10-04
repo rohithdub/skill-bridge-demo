@@ -4,14 +4,15 @@ import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useSkillBridge } from '@/context/SkillBridgeContext';
 import { Sparkles, ArrowRight } from 'lucide-react';
+import { getUIText } from '@/lib/translations';
 
 export const SplashScreen: React.FC = () => {
-  const { setStage } = useSkillBridge();
+  const { setStage, selectedLanguage } = useSkillBridge();
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setStage('language');
-    }, 2600);
+    }, 3500);
     return () => clearTimeout(timer);
   }, [setStage]);
 
@@ -27,7 +28,7 @@ export const SplashScreen: React.FC = () => {
           className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-[#10152E]/90 border border-[#3159E8]/40 text-[#62E6C8] text-xs font-semibold tracking-wide uppercase shadow-sm mx-auto text-center"
         >
           <Sparkles className="w-3.5 h-3.5 text-[#62E6C8] animate-pulse shrink-0" />
-          <span className="leading-none text-center">Smart India Hackathon Prototype</span>
+          <span className="leading-none text-center">{getUIText('sihPrototypeBadge', selectedLanguage)}</span>
         </motion.div>
       </div>
 
@@ -95,7 +96,7 @@ export const SplashScreen: React.FC = () => {
           transition={{ delay: 0.5, duration: 0.6 }}
           className="text-base text-[#EEEAFE] font-medium max-w-xs"
         >
-          &ldquo;Your voice. Your skills. Your future.&rdquo;
+          &ldquo;{getUIText('splashTagline', selectedLanguage)}&rdquo;
         </motion.p>
 
         {/* Positioning Subtitle */}
@@ -105,7 +106,7 @@ export const SplashScreen: React.FC = () => {
           transition={{ delay: 0.7, duration: 0.6 }}
           className="text-xs text-[#62E6C8]/90 font-medium mt-3 max-w-[260px] leading-relaxed"
         >
-          An AI-powered Cognitive Bridge to Empowerment
+          {getUIText('splashSubtitle', selectedLanguage)}
         </motion.p>
       </div>
 
@@ -120,13 +121,13 @@ export const SplashScreen: React.FC = () => {
           onClick={() => setStage('language')}
           className="w-full max-w-xs py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#24135F] via-[#3159E8] via-[#13B8B2] to-[#62E6C8] hover:opacity-95 active:scale-[0.98] text-[#10152E] font-extrabold text-base flex items-center justify-center gap-2 shadow-xl shadow-[#3159E8]/30 transition-all cursor-pointer border border-[#62E6C8]/40"
         >
-          <span className="text-white drop-shadow-sm">Get Started</span>
+          <span className="text-white drop-shadow-sm">{getUIText('getStartedBtn', selectedLanguage)}</span>
           <ArrowRight className="w-5 h-5 text-white" />
         </button>
 
         <div className="flex items-center gap-2 text-xs text-slate-300">
           <span className="w-2 h-2 rounded-full bg-[#62E6C8] animate-ping" />
-          <span>Voice-first AI career onboarding</span>
+          <span>{getUIText('splashVoiceOnboarding', selectedLanguage)}</span>
         </div>
       </motion.div>
 

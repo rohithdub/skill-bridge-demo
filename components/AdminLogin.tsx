@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useSkillBridge } from '@/context/SkillBridgeContext';
+import { getUIText } from '@/lib/translations';
 import { Shield, Lock, User, ArrowRight, ArrowLeft, KeyRound, Eye, EyeOff, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface AdminLoginProps {
@@ -11,7 +12,7 @@ interface AdminLoginProps {
 }
 
 export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess, onBack }) => {
-  const { setStage } = useSkillBridge();
+  const { setStage, selectedLanguage } = useSkillBridge();
   const [adminName, setAdminName] = useState<string>('admin');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -22,12 +23,12 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess, onBack }) => 
     if (e) e.preventDefault();
 
     if (!adminName.trim()) {
-      setError('Please enter admin username');
+      setError(getUIText('enterUsernameError', selectedLanguage));
       return;
     }
 
     if (!password) {
-      setError('Please enter admin password');
+      setError(getUIText('enterPasswordError', selectedLanguage));
       return;
     }
 
@@ -49,7 +50,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess, onBack }) => 
           setStage('admin_dashboard');
         }
       } else {
-        setError('Invalid credentials. Use demo name: admin | password: admin or admin123');
+        setError(getUIText('invalidCredentialsError', selectedLanguage));
       }
     }, 450);
   };
@@ -77,14 +78,14 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess, onBack }) => 
           <button
             onClick={handleBack}
             className="w-10 h-10 rounded-xl bg-[#10152E] border border-[#3159E8]/40 flex items-center justify-center text-slate-300 hover:text-white hover:bg-[#24135F] shadow-sm active:scale-95 transition-all cursor-pointer"
-            title="Return to OTP Verification"
+            title={getUIText('returnToOtpVerification', selectedLanguage)}
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           
           <div className="flex items-center gap-1.5 text-xs font-semibold text-[#62E6C8] bg-[#10152E] border border-[#3159E8]/50 px-3 py-1 rounded-full">
             <Shield className="w-3.5 h-3.5 text-[#62E6C8]" />
-            <span>Admin Portal</span>
+            <span>{getUIText('adminPortal', selectedLanguage)}</span>
           </div>
         </div>
 
@@ -99,10 +100,10 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess, onBack }) => 
         </motion.div>
 
         <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-          <span>Administrator Access</span>
+          <span>{getUIText('adminAccessTitle', selectedLanguage)}</span>
         </h1>
         <p className="text-[#EEEAFE]/80 text-xs mt-1 leading-relaxed">
-          Log in with supervisor credentials to monitor registered learners, active learning tracks, and progress analytics.
+          {getUIText('adminAccessSubtitle', selectedLanguage)}
         </p>
 
         {/* Credentials Form */}
@@ -111,7 +112,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess, onBack }) => 
           {/* Admin Name Field */}
           <div>
             <label className="block text-xs font-semibold text-[#EEEAFE] uppercase tracking-wider mb-1.5">
-              Admin Name / Username
+              {getUIText('adminUsernameLabel', selectedLanguage)}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -135,7 +136,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess, onBack }) => 
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-xs font-semibold text-[#EEEAFE] uppercase tracking-wider">
-                Admin Password
+                {getUIText('adminPasswordLabel', selectedLanguage)}
               </label>
               <button
                 type="button"
@@ -143,7 +144,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess, onBack }) => 
                 className="text-[11px] font-semibold text-[#62E6C8] hover:underline flex items-center gap-1 cursor-pointer transition-colors"
               >
                 <Sparkles className="w-3 h-3" />
-                <span>Fill Demo (admin123)</span>
+                <span>{getUIText('fillDemoBtn', selectedLanguage)} (admin123)</span>
               </button>
             </div>
             <div className="relative">
@@ -157,7 +158,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess, onBack }) => 
                   setPassword(e.target.value);
                   if (error) setError('');
                 }}
-                placeholder="Enter admin password"
+                placeholder={getUIText('enterAdminPasswordPlaceholder', selectedLanguage)}
                 className="w-full h-13 pl-11 pr-11 bg-[#10152E]/90 border border-[#3159E8]/40 rounded-xl text-base font-medium text-white placeholder:text-slate-500 shadow-inner focus:outline-none focus:ring-2 focus:ring-[#3159E8] focus:border-transparent transition-all"
               />
               <button
@@ -203,11 +204,11 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess, onBack }) => 
             {isLoading ? (
               <span className="flex items-center gap-2">
                 <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Authenticating...</span>
+                <span>{getUIText('processing', selectedLanguage)}</span>
               </span>
             ) : (
               <>
-                <span>Sign In to Admin Panel</span>
+                <span>{getUIText('loginToAdminDashboardBtn', selectedLanguage)}</span>
                 <ArrowRight className="w-5 h-5 text-white" />
               </>
             )}

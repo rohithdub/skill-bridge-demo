@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { useSkillBridge } from '@/context/SkillBridgeContext';
+import { normalizeSkills } from '@/lib/normalizeProfile';
+import { getHomeGreeting, getHomeNextStepVoice, getUIText } from '@/lib/translations';
 import {
   Sparkles,
   ArrowRight,
@@ -35,6 +37,7 @@ export const BeneficiaryHome: React.FC = () => {
     enterprisePathway,
     activeJourneyStep,
     setActiveTab,
+    setOpportunitiesSubView,
     setStage,
     speakText,
     selectedLanguage,
@@ -53,7 +56,7 @@ export const BeneficiaryHome: React.FC = () => {
     profile.education,
     profile.caste,
     profile.currentJob,
-    profile.skills.length > 0,
+    normalizeSkills(profile.skills).length > 0,
     profile.travelRadius
   ].filter(Boolean).length;
   const profileCompleteness = Math.round((profileFieldsFilled / 9) * 100);
@@ -62,66 +65,80 @@ export const BeneficiaryHome: React.FC = () => {
   const getNextBestStep = () => {
     if (!roadmap) {
       return {
-        title: 'Choose Your Career Aspiration',
-        subtitle: 'Select or speak your dream profession to generate your AI roadmap.',
-        actionLabel: 'Select Career Goal',
+        title: getUIText('chooseAspirationTitle', selectedLanguage),
+        subtitle: getUIText('chooseAspirationSub', selectedLanguage),
+        actionLabel: getUIText('chooseAspirationBtn', selectedLanguage),
         action: () => setStage('career_goal'),
         icon: Compass,
-        accent: 'from-[#24135F] via-[#3159E8] to-[#13B8B2]'
+        accent: 'from-[#24135F] via-[#3159E8] to-[#13B8B2]',
+        spokenText: getHomeNextStepVoice('choose_goal', {}, selectedLanguage)
       };
     }
 
     const enrolledTraining = trainingPrograms.find(t => t.isEnrolled);
     if (!enrolledTraining) {
       return {
-        title: isSelfEmployment ? 'Review PM-AJAY Enterprise Grant' : 'Enroll in Recommended Training',
+        title: isSelfEmployment ? getUIText('reviewGrantTitle', selectedLanguage) : getUIText('enrollTrainingTitle', selectedLanguage),
         subtitle: isSelfEmployment
-          ? '₹50,000 direct capital grant + ₹15,000 PM Vishwakarma equipment voucher available.'
-          : 'Suryamitra batch at Guindy Hub has 8 seats remaining (100% Free under PM-AJAY).',
-        actionLabel: isSelfEmployment ? 'Explore Enterprise Hub' : 'Enroll in Training (Zero Fee)',
-        action: () => setActiveTab('opportunities'),
+          ? getUIText('reviewGrantSub', selectedLanguage)
+          : getUIText('enrollTrainingSub', selectedLanguage),
+        actionLabel: isSelfEmployment ? getUIText('exploreEnterpriseBtn', selectedLanguage) : getUIText('enrollTrainingBtn', selectedLanguage),
+        action: () => {
+          setOpportunitiesSubView(isSelfEmployment ? 'enterprise' : 'training');
+          setActiveTab('opportunities');
+        },
         icon: isSelfEmployment ? Store : GraduationCap,
-        accent: 'from-[#24135F] via-[#3159E8] to-[#62E6C8]'
+        accent: 'from-[#24135F] via-[#3159E8] to-[#62E6C8]',
+        spokenText: getHomeNextStepVoice(isSelfEmployment ? 'enterprise' : 'training', {}, selectedLanguage)
       };
     }
 
     const appliedJob = opportunities.find(o => o.applicationStatus === 'Applied' || o.applicationStatus === 'Interview Scheduled');
     if (!appliedJob && !isSelfEmployment) {
       return {
-        title: 'Apply to Matched Local Jobs',
-        subtitle: 'SunPower Solutions has a verified vacancy matching your skills within 6.4 km.',
-        actionLabel: 'View Matched Opportunities',
-        action: () => setActiveTab('opportunities'),
+        title: getUIText('applyJobsTitle', selectedLanguage),
+        subtitle: getUIText('applyJobsSub', selectedLanguage),
+        actionLabel: getUIText('viewMatchedOppsBtn', selectedLanguage),
+        action: () => {
+          setOpportunitiesSubView('jobs');
+          setActiveTab('opportunities');
+        },
         icon: Briefcase,
-        accent: 'from-[#3159E8] to-[#13B8B2]'
+        accent: 'from-[#3159E8] to-[#13B8B2]',
+        spokenText: getHomeNextStepVoice('jobs', {}, selectedLanguage)
       };
     }
 
     if (appliedJob?.applicationStatus === 'Interview Scheduled') {
       return {
-        title: 'Prepare for Upcoming Interview',
-        subtitle: `Scheduled with ${appliedJob.organization} on ${appliedJob.interviewDate || '03 Oct'} (${appliedJob.interviewTime || '10:30 AM'}).`,
-        actionLabel: 'View Placement Details',
-        action: () => setActiveTab('opportunities'),
+        title: getUIText('prepInterviewTitle', selectedLanguage),
+        subtitle: getUIText('prepInterviewSub', selectedLanguage),
+        actionLabel: getUIText('viewPlacementBtn', selectedLanguage),
+        action: () => {
+          setOpportunitiesSubView('applications');
+          setActiveTab('opportunities');
+        },
         icon: Award,
-        accent: 'from-[#13B8B2] to-[#62E6C8]'
+        accent: 'from-[#13B8B2] to-[#62E6C8]',
+        spokenText: getHomeNextStepVoice('interview', { org: appliedJob.organization, date: appliedJob.interviewDate, time: appliedJob.interviewTime }, selectedLanguage)
       };
     }
 
     return {
-      title: 'Continue Milestone 3 Practical Lab',
-      subtitle: 'Hands-on Rooftop & Ground Mount Installation module in progress.',
-      actionLabel: 'Open Skill Roadmap',
+      title: getUIText('continueLabTitle', selectedLanguage),
+      subtitle: getUIText('continueLabSub', selectedLanguage),
+      actionLabel: getUIText('openRoadmapBtn', selectedLanguage),
       action: () => setActiveTab('roadmap'),
       icon: Zap,
-      accent: 'from-[#24135F] via-[#3159E8] to-[#13B8B2]'
+      accent: 'from-[#24135F] via-[#3159E8] to-[#13B8B2]',
+      spokenText: getHomeNextStepVoice('milestone', {}, selectedLanguage)
     };
   };
 
   const nextStep = getNextBestStep();
 
   const handleReadNextStep = () => {
-    const text = `${nextStep.title}. ${nextStep.subtitle}`;
+    const text = nextStep.spokenText || `${nextStep.title}. ${nextStep.subtitle}`;
     speakText(text, selectedLanguage);
   };
 
@@ -136,7 +153,7 @@ export const BeneficiaryHome: React.FC = () => {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-1.5 bg-[#24135F] px-2.5 py-1 rounded-full border border-[#3159E8]/40 shadow-xs">
             <Sparkles className="w-3.5 h-3.5 text-[#62E6C8]" />
-            <span className="text-[11px] font-semibold text-[#62E6C8]">PM-AJAY Livelihood Assistant</span>
+            <span className="text-[11px] font-semibold text-[#62E6C8]">{getUIText('livelihoodAssistant', selectedLanguage)}</span>
           </div>
 
           <span className="text-[11px] font-mono font-bold text-white bg-[#10152E] px-2.5 py-1 rounded-full border border-[#62E6C8]/40">
@@ -148,21 +165,21 @@ export const BeneficiaryHome: React.FC = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-black text-white tracking-tight">
-              Vanakkam, {profile.name ? profile.name.split(' ')[0] : 'Beneficiary'}!
+              {getHomeGreeting(selectedLanguage)}, {profile.name ? profile.name.split(' ')[0] : getUIText('beneficiaryFallback', selectedLanguage)}!
             </h1>
             <p className="text-xs text-[#EEEAFE]/90 mt-0.5 font-medium flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5 text-[#62E6C8]" />
               <span>{profile.district || 'Chennai'}, {profile.state || 'Tamil Nadu'}</span>
               <span className="text-slate-400">•</span>
-              <span className="text-[#62E6C8] font-semibold">Radius: {profile.travelRadius || '15 km'}</span>
+              <span className="text-[#62E6C8] font-semibold">{getUIText('radiusLabel', selectedLanguage)}: {profile.travelRadius || '15 km'}</span>
             </p>
           </div>
 
           <button
             onClick={handleReadNextStep}
             className="p-2.5 rounded-2xl bg-[#10152E]/90 hover:bg-[#24135F] text-[#62E6C8] border border-[#3159E8]/40 shadow-sm active:scale-95 transition-all cursor-pointer"
-            title="Listen to next action"
-            aria-label="Voice playback"
+            title={getUIText('listenNextAction', selectedLanguage)}
+            aria-label={getUIText('voicePlayback', selectedLanguage)}
           >
             <Volume2 className="w-4 h-4" />
           </button>
@@ -171,21 +188,21 @@ export const BeneficiaryHome: React.FC = () => {
         {/* Readiness Metrics Cards */}
         <div className="grid grid-cols-3 gap-2.5 mt-4 pt-3 border-t border-white/10">
           <div className="bg-[#10152E]/60 backdrop-blur-sm p-2 rounded-xl border border-white/10 text-center">
-            <span className="text-[10px] text-slate-300 font-medium block">Skill Coverage</span>
+            <span className="text-[10px] text-slate-300 font-medium block">{getUIText('skillCoverage', selectedLanguage)}</span>
             <span className="text-base font-extrabold text-[#62E6C8]">{skillGap.coveragePercent}%</span>
-            <span className="text-[9px] text-[#EEEAFE]/70 block truncate">Baseline Strength</span>
+            <span className="text-[9px] text-[#EEEAFE]/70 block truncate">{getUIText('baselineStrength', selectedLanguage)}</span>
           </div>
 
           <div className="bg-[#10152E]/60 backdrop-blur-sm p-2 rounded-xl border border-white/10 text-center">
-            <span className="text-[10px] text-slate-300 font-medium block">Profile Ready</span>
+            <span className="text-[10px] text-slate-300 font-medium block">{getUIText('profileReady', selectedLanguage)}</span>
             <span className="text-base font-extrabold text-[#3159E8] bg-white px-1.5 rounded-sm">{profileCompleteness}%</span>
-            <span className="text-[9px] text-[#EEEAFE]/70 block truncate">SC Priority Verified</span>
+            <span className="text-[9px] text-[#EEEAFE]/70 block truncate">{getUIText('scPriorityVerified', selectedLanguage)}</span>
           </div>
 
           <div className="bg-[#10152E]/60 backdrop-blur-sm p-2 rounded-xl border border-white/10 text-center">
-            <span className="text-[10px] text-slate-300 font-medium block">Matched Grants</span>
+            <span className="text-[10px] text-slate-300 font-medium block">{getUIText('matchedGrants', selectedLanguage)}</span>
             <span className="text-base font-extrabold text-amber-300">₹50K+</span>
-            <span className="text-[9px] text-[#EEEAFE]/70 block truncate">PM-AJAY Capital</span>
+            <span className="text-[9px] text-[#EEEAFE]/70 block truncate">{getUIText('pmajayCapital', selectedLanguage)}</span>
           </div>
         </div>
       </div>
@@ -200,9 +217,9 @@ export const BeneficiaryHome: React.FC = () => {
           <div className="flex items-center justify-between mb-2">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#EEEAFE] text-[#24135F] uppercase tracking-wider">
               <Sparkles className="w-3 h-3 text-[#3159E8]" />
-              <span>Your Next Best Step</span>
+              <span>{getUIText('yourNextBestStep', selectedLanguage)}</span>
             </span>
-            <span className="text-[10px] text-slate-400 font-medium">Action Required</span>
+            <span className="text-[10px] text-slate-400 font-medium">{getUIText('actionRequired', selectedLanguage)}</span>
           </div>
 
           <h2 className="text-base font-extrabold text-[#10152E] mt-1 leading-snug">
@@ -226,17 +243,17 @@ export const BeneficiaryHome: React.FC = () => {
           <div className="flex items-center justify-between mb-3">
             <div>
               <h3 className="text-xs font-bold text-[#10152E] uppercase tracking-wider">
-                My Livelihood Pathway
+                {getUIText('myLivelihoodPathway', selectedLanguage)}
               </h3>
               <p className="text-[10px] text-slate-500 font-medium">
-                End-to-end journey from profile assessment to placement
+                {getUIText('pathwaySubtitle', selectedLanguage)}
               </p>
             </div>
             <button
               onClick={() => setActiveTab('roadmap')}
               className="text-[11px] text-[#3159E8] font-bold hover:underline flex items-center gap-0.5"
             >
-              <span>View Roadmap</span>
+              <span>{getUIText('viewRoadmap', selectedLanguage)}</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -244,16 +261,16 @@ export const BeneficiaryHome: React.FC = () => {
           {/* Stepper Grid (Steps 1 to 10) */}
           <div className="grid grid-cols-5 gap-1.5 py-1">
             {[
-              { num: 1, label: 'Profile' },
-              { num: 2, label: 'Assess' },
-              { num: 3, label: 'Skill Gap' },
-              { num: 4, label: 'Training' },
-              { num: 5, label: 'Enrolled' },
-              { num: 6, label: 'Learning' },
-              { num: 7, label: 'Certified' },
-              { num: 8, label: 'Matched' },
-              { num: 9, label: 'Placed' },
-              { num: 10, label: 'Follow-up' }
+              { num: 1, label: getUIText('stepProfile', selectedLanguage) },
+              { num: 2, label: getUIText('stepAssess', selectedLanguage) },
+              { num: 3, label: getUIText('stepSkillGap', selectedLanguage) },
+              { num: 4, label: getUIText('stepTraining', selectedLanguage) },
+              { num: 5, label: getUIText('stepEnrolled', selectedLanguage) },
+              { num: 6, label: getUIText('stepLearning', selectedLanguage) },
+              { num: 7, label: getUIText('stepCertified', selectedLanguage) },
+              { num: 8, label: getUIText('stepMatched', selectedLanguage) },
+              { num: 9, label: getUIText('stepPlaced', selectedLanguage) },
+              { num: 10, label: getUIText('stepFollowUp', selectedLanguage) }
             ].map((step) => {
               const isPast = step.num < activeJourneyStep;
               const isCurrent = step.num === activeJourneyStep;
@@ -285,16 +302,19 @@ export const BeneficiaryHome: React.FC = () => {
         <div className="grid grid-cols-2 gap-3">
           {/* Pillar 1: Opportunities */}
           <button
-            onClick={() => setActiveTab('opportunities')}
+            onClick={() => {
+              setOpportunitiesSubView('jobs');
+              setActiveTab('opportunities');
+            }}
             className="p-3.5 rounded-2xl bg-white border border-slate-200 hover:border-[#3159E8]/40 shadow-xs flex flex-col justify-between text-left transition-all hover:shadow-sm active:scale-98 cursor-pointer"
           >
             <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#3159E8] flex items-center justify-center mb-2">
               <Briefcase className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-xs font-bold text-slate-900 block">Nearby Opportunities</span>
+              <span className="text-xs font-bold text-slate-900 block">{getUIText('nearbyOppsTitle', selectedLanguage)}</span>
               <span className="text-[10px] text-slate-500 block mt-0.5">
-                {opportunities.length} jobs within {profile.travelRadius || '15 km'}
+                {opportunities.length} {getUIText('jobsWithin', selectedLanguage)} {profile.travelRadius || '15 km'}
               </span>
             </div>
           </button>
@@ -308,25 +328,28 @@ export const BeneficiaryHome: React.FC = () => {
               <Landmark className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-xs font-bold text-slate-900 block">Benefit Navigator</span>
+              <span className="text-xs font-bold text-slate-900 block">{getUIText('benefitNavTitle', selectedLanguage)}</span>
               <span className="text-[10px] text-slate-500 block mt-0.5">
-                PM-AJAY, PMKVY, Loans
+                {getUIText('benefitNavSub', selectedLanguage)}
               </span>
             </div>
           </button>
 
           {/* Pillar 3: Enterprise Pathway */}
           <button
-            onClick={() => setActiveTab('opportunities')}
+            onClick={() => {
+              setOpportunitiesSubView('enterprise');
+              setActiveTab('opportunities');
+            }}
             className="p-3.5 rounded-2xl bg-white border border-slate-200 hover:border-[#3159E8]/40 shadow-xs flex flex-col justify-between text-left transition-all hover:shadow-sm active:scale-98 cursor-pointer"
           >
             <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-2">
               <Store className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-xs font-bold text-slate-900 block">Enterprise Launch</span>
+              <span className="text-xs font-bold text-slate-900 block">{getUIText('enterpriseLaunchTitle', selectedLanguage)}</span>
               <span className="text-[10px] text-slate-500 block mt-0.5">
-                Checklist & Toolkits
+                {getUIText('enterpriseLaunchSub', selectedLanguage)}
               </span>
             </div>
           </button>
@@ -340,7 +363,7 @@ export const BeneficiaryHome: React.FC = () => {
               <ShieldCheck className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-xs font-bold text-slate-900 block">Citizen Serial ID</span>
+              <span className="text-xs font-bold text-slate-900 block">{getUIText('citizenSerialTitle', selectedLanguage)}</span>
               <span className="text-[10px] text-slate-500 block mt-0.5 font-mono">
                 {profile.serialId || 'TN-32-101'}
               </span>
@@ -353,14 +376,14 @@ export const BeneficiaryHome: React.FC = () => {
           <div className="flex items-center justify-between mb-2">
             <span className="text-[10px] font-bold text-[#62E6C8] uppercase tracking-wider flex items-center gap-1">
               <PhoneCall className="w-3 h-3 text-[#62E6C8]" />
-              <span>Multi-Channel Access Simulation</span>
+              <span>{getUIText('multiChannelTitle', selectedLanguage)}</span>
             </span>
             <span className="text-[9px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700">
-              Low-Literacy First
+              {getUIText('lowLiteracyBadge', selectedLanguage)}
             </span>
           </div>
           <p className="text-[11px] text-slate-300 mb-3">
-            Experience how rural SC beneficiaries access Skill Bridge via Toll-Free IVR Phone Call or WhatsApp Voice Note.
+            {getUIText('multiChannelDesc', selectedLanguage)}
           </p>
 
           <div className="grid grid-cols-2 gap-2">
@@ -369,7 +392,7 @@ export const BeneficiaryHome: React.FC = () => {
               className="py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center justify-center gap-1.5 border border-white/10 transition-colors active:scale-95 cursor-pointer"
             >
               <PhoneCall className="w-3.5 h-3.5 text-[#62E6C8]" />
-              <span>Launch IVR Call</span>
+              <span>{getUIText('launchIvrBtn', selectedLanguage)}</span>
             </button>
 
             <button
@@ -377,7 +400,7 @@ export const BeneficiaryHome: React.FC = () => {
               className="py-2.5 px-3 rounded-xl bg-[#25D366]/20 hover:bg-[#25D366]/30 text-white text-xs font-semibold flex items-center justify-center gap-1.5 border border-[#25D366]/40 transition-colors active:scale-95 cursor-pointer"
             >
               <MessageSquare className="w-3.5 h-3.5 text-[#25D366]" />
-              <span>WhatsApp Voice</span>
+              <span>{getUIText('whatsAppVoiceBtn', selectedLanguage)}</span>
             </button>
           </div>
         </div>
@@ -385,7 +408,7 @@ export const BeneficiaryHome: React.FC = () => {
         {/* PROTOTYPE TRANSPARENCY NOTICE */}
         <div className="text-center pt-2">
           <p className="text-[10px] text-slate-600 font-medium">
-            Skill Bridge SIH 2026 Prototype • Aligned with Ministry of Social Justice & Empowerment (PM-AJAY)
+            {getUIText('prototypeFooter', selectedLanguage)}
           </p>
         </div>
       </div>

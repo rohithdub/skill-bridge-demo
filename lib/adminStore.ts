@@ -18,6 +18,7 @@ import {
   DEMO_TRAINING_CENTERS,
   DEMO_OPPORTUNITIES
 } from './opportunityData';
+import { normalizeSkills } from './normalizeProfile';
 
 const ADMIN_STORAGE_KEY = 'skillbridge_admin_learners_v5';
 const TASKS_STORAGE_KEY = 'skillbridge_admin_tasks_v5';
@@ -524,7 +525,7 @@ export class AdminStore {
       preferredLanguage: profile.preferredLanguage === 'ta' ? 'Tamil' : profile.preferredLanguage === 'hi' ? 'Hindi' : 'English',
       enrolledDate: existingIndex >= 0 ? learners[existingIndex].enrolledDate : 'Today',
       lastActive: 'Active Right Now',
-      skills: profile.skills && profile.skills.length > 0 ? profile.skills : ['Electrical basics', 'Hands-on tools'],
+      skills: normalizeSkills(profile.skills).length > 0 ? normalizeSkills(profile.skills) : ['Electrical basics', 'Hands-on tools'],
       newSkills: roadmap?.newSkillsToAcquire || ['Photovoltaic (PV) Cell Physics', 'DC Array Inverter Sizing', 'Rooftop Structural Mounting'],
       totalSteps,
       completedSteps,

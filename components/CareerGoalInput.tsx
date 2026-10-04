@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useSkillBridge } from '@/context/SkillBridgeContext';
 import { POPULAR_CAREER_GOALS } from '@/lib/questions';
+import { getUIText, getLocalizedGoalTitle, getAnalyzingPathwaysVoice, getLocalizedJob, getLocalizedSector } from '@/lib/translations';
 import { VoiceWaveform } from './VoiceWaveform';
 import { SpeechService } from '@/lib/speechService';
 import {
@@ -55,18 +56,19 @@ export const CareerGoalInput: React.FC = () => {
   const [inputGoal, setInputGoal] = useState<string>(careerGoal || '');
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
 
-  const goalPrompt = "What is your future job goal? Tell me what you want to become.";
+  const goalPrompt = getUIText('careerGoalVoicePrompt', selectedLanguage);
 
   useEffect(() => {
     // Speak on arrival if no career goal set
     if (!careerGoal) {
       speakText(goalPrompt, selectedLanguage);
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const generateRoadmapForGoal = (targetGoal: string) => {
     setIsGenerating(true);
-    speakText(`Analyzing pathways from ${profile.currentJob || 'your background'} to ${targetGoal}. Generating your roadmap now.`, selectedLanguage);
+    const speech = getAnalyzingPathwaysVoice(profile.currentJob || 'your background', targetGoal, selectedLanguage);
+    speakText(speech, selectedLanguage);
 
     setTimeout(() => {
       generateAndSetRoadmap(targetGoal);
@@ -135,10 +137,10 @@ export const CareerGoalInput: React.FC = () => {
         </div>
 
         <h1 className="text-2xl font-black text-[#10152E] tracking-tight">
-          What is your future job goal?
+          {getUIText('careerGoalTitle', selectedLanguage)}
         </h1>
         <p className="text-slate-500 text-sm mt-1">
-          Tell me what you want to become.
+          {getUIText('careerGoalSubtitle', selectedLanguage)}
         </p>
 
         {/* Current Job Reference Bridge Card */}
@@ -147,11 +149,11 @@ export const CareerGoalInput: React.FC = () => {
             <Briefcase className="w-5 h-5" />
           </div>
           <div className="flex-1 text-xs">
-            <span className="text-slate-400 font-medium">Connecting from:</span>
-            <p className="font-bold text-[#10152E] text-sm">{profile.currentJob || 'Electrical Assistant'}</p>
+            <span className="text-slate-400 font-medium">{getUIText('connectingFrom', selectedLanguage)}</span>
+            <p className="font-bold text-[#10152E] text-sm">{getLocalizedJob(profile.currentJob || 'Electrical Assistant', selectedLanguage)}</p>
           </div>
           <span className="text-[11px] font-bold text-[#24135F] bg-[#EEEAFE] px-2.5 py-1 rounded-full border border-[#3159E8]/20">
-            AI Bridge
+            {getUIText('aiBridge', selectedLanguage)}
           </span>
         </div>
       </div>
@@ -164,15 +166,15 @@ export const CareerGoalInput: React.FC = () => {
           {isGenerating ? (
             <div className="flex items-center gap-2 text-[#3159E8] font-bold text-sm">
               <Sparkles className="w-4 h-4 animate-spin text-[#62E6C8]" />
-              <span>Synthesizing cognitive roadmap...</span>
+              <span>{getUIText('synthesizingRoadmap', selectedLanguage)}</span>
             </div>
           ) : isListening ? (
             <p className="text-xs font-bold text-[#3159E8] animate-pulse">
-              Listening for your career goal... Speak now
+              {getUIText('listeningCareerGoal', selectedLanguage)}
             </p>
           ) : (
             <p className="text-xs text-slate-400 font-medium">
-              Tap mic to speak or select from popular goals below
+              {getUIText('tapMicCareerGoal', selectedLanguage)}
             </p>
           )}
         </div>
@@ -186,7 +188,7 @@ export const CareerGoalInput: React.FC = () => {
               ? 'bg-rose-500 text-white ring-4 ring-rose-200 animate-pulse'
               : 'bg-gradient-to-tr from-[#24135F] via-[#3159E8] to-[#13B8B2] text-white shadow-lg shadow-[#3159E8]/30 border border-[#62E6C8]/30'
           }`}
-          aria-label="Speak career goal"
+          aria-label={getUIText('speakCareerGoal', selectedLanguage)}
         >
           {isListening ? <MicOff className="w-7 h-7" /> : <Mic className="w-7 h-7" />}
         </motion.button>
@@ -195,7 +197,7 @@ export const CareerGoalInput: React.FC = () => {
       {/* Popular Goals Grid & Text Input */}
       <div>
         <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5">
-          Popular Recommended Pathways
+          {getUIText('popularGoalsHeader', selectedLanguage)}
         </span>
 
         <div className="grid grid-cols-2 gap-2 mb-4 max-h-48 overflow-y-auto pr-1">
@@ -222,13 +224,13 @@ export const CareerGoalInput: React.FC = () => {
                   <IconComp className="w-4 h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-xs truncate">{goal.title}</p>
+                  <p className="font-bold text-xs truncate">{getLocalizedGoalTitle(goal.title, selectedLanguage)}</p>
                   <p
                     className={`text-[10px] truncate ${
                       isSelected ? 'text-[#62E6C8]' : 'text-slate-400'
                     }`}
                   >
-                    {goal.sector}
+                    {getLocalizedSector(goal.sector, selectedLanguage)}
                   </p>
                 </div>
               </button>
@@ -242,7 +244,7 @@ export const CareerGoalInput: React.FC = () => {
             type="text"
             value={inputGoal}
             onChange={(e) => setInputGoal(e.target.value)}
-            placeholder="Type custom goal (e.g. Solar Technician)"
+            placeholder={getUIText('typeCustomGoalPlaceholder', selectedLanguage)}
             disabled={isGenerating}
             className="flex-1 h-12 px-4 rounded-xl border border-slate-300 bg-white text-sm font-semibold text-[#10152E] focus:outline-none focus:ring-2 focus:ring-[#3159E8] shadow-xs"
           />
@@ -256,7 +258,7 @@ export const CareerGoalInput: React.FC = () => {
                 : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
             }`}
           >
-            <span>Build</span>
+            <span>{getUIText('buildRoadmapBtn', selectedLanguage)}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>

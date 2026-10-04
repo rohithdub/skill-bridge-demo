@@ -5,6 +5,21 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSkillBridge } from '@/context/SkillBridgeContext';
 import { GOVERNMENT_SCHEMES_DATA } from '@/lib/schemesData';
 import { GovtScheme, SchemeCategory } from '@/types/skillbridge';
+import {
+  getSchemesOverviewVoice,
+  getSchemeDetailVoice,
+  getUIText,
+  getLocalizedJob,
+  getLocalizedCaste,
+  getLocalizedIncome,
+  getLocalizedSchemeName,
+  getLocalizedSchemeMinistry,
+  getLocalizedSchemeBenefit,
+  getLocalizedSchemeSubsidy,
+  getLocalizedSchemeDescription,
+  getLocalizedSchemeBadge,
+  getLocalizedSchemeCategory
+} from '@/lib/translations';
 import confetti from 'canvas-confetti';
 import {
   Landmark,
@@ -114,7 +129,7 @@ export const SchemesTab: React.FC = () => {
   // Audio Readout for the overview
   const handleReadOverview = () => {
     setIsReadingSummary(true);
-    const text = `Showing verified government schemes for ${selectedCaste === 'All' ? 'all communities' : selectedCaste + ' community'}. There are ${filteredSchemes.length} schemes available including PM Vishwakarma, skill training, toolkits, and low interest loan grants.`;
+    const text = getSchemesOverviewVoice(selectedCaste, filteredSchemes.length, selectedLanguage);
     speakText(text, selectedLanguage, () => {
       setIsReadingSummary(false);
     });
@@ -123,7 +138,12 @@ export const SchemesTab: React.FC = () => {
   // Audio Readout for a single scheme
   const handleReadScheme = (scheme: GovtScheme, e: React.MouseEvent) => {
     e.stopPropagation();
-    const text = `${scheme.name}, sponsored by ${scheme.ministry}. Key benefit: ${scheme.primaryBenefit}. Eligibility: ${scheme.eligibility.casteLabel}.`;
+    const text = getSchemeDetailVoice(
+      getLocalizedSchemeName(scheme, selectedLanguage),
+      getLocalizedSchemeMinistry(scheme, selectedLanguage),
+      getLocalizedSchemeBenefit(scheme, selectedLanguage),
+      selectedLanguage
+    );
     speakText(text, selectedLanguage);
   };
 
@@ -184,29 +204,29 @@ export const SchemesTab: React.FC = () => {
         <div className="flex items-center justify-between text-xs text-[#62E6C8] font-semibold mb-2 relative z-10">
           <div className="flex items-center gap-1.5 bg-[#24135F] px-2.5 py-1 rounded-full border border-[#3159E8]/40 shadow-xs">
             <Landmark className="w-3.5 h-3.5 text-[#62E6C8]" />
-            <span>National & State Welfare Schemes</span>
+            <span>{getUIText('nationalStateSchemes', selectedLanguage)}</span>
           </div>
 
           <button
             onClick={handleReadOverview}
             className="flex items-center gap-1 text-[11px] text-[#EEEAFE] hover:text-white bg-[#10152E]/80 px-2.5 py-1 rounded-full border border-[#3159E8]/40 active:scale-95 cursor-pointer transition-colors"
-            title="Listen to scheme summary"
+            title={getUIText('audioInfo', selectedLanguage)}
           >
             <Volume2 className="w-3.5 h-3.5 text-[#62E6C8]" />
-            <span>Audio Info</span>
+            <span>{getUIText('audioInfo', selectedLanguage)}</span>
           </button>
         </div>
 
         {/* Title & Community Focus */}
         <div className="mt-1 relative z-10">
           <h1 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
-            <span>Community Schemes</span>
+            <span>{getUIText('communitySchemesTitle', selectedLanguage)}</span>
             <span className="text-xs font-bold text-[#62E6C8] bg-[#13B8B2]/20 border border-[#62E6C8]/40 px-2 py-0.5 rounded-full">
-              {selectedCaste} Focus
+              {selectedCaste} {getUIText('focusBadge', selectedLanguage)}
             </span>
           </h1>
           <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-            Free government skill development, ₹15,000 toolkits, DBT scholarships, and low-interest loans matched to your background.
+            {getUIText('schemesSubtitleText', selectedLanguage)}
           </p>
         </div>
 
@@ -218,13 +238,13 @@ export const SchemesTab: React.FC = () => {
             </div>
             <div>
               <span className="text-[10px] uppercase font-bold tracking-wider text-[#62E6C8] block">
-                Your Registered Profile
+                {getUIText('yourRegisteredProfile', selectedLanguage)}
               </span>
               <p className="text-xs font-extrabold text-white">
-                {profile.name || 'Citizen'} • <span className="text-[#62E6C8]">{userCaste} Category</span>
+                {profile.name || getUIText('citizenFallback', selectedLanguage)} • <span className="text-[#62E6C8]">{userCaste} {getUIText('categorySuffix', selectedLanguage)}</span>
               </p>
               <span className="text-[11px] text-slate-300">
-                {userCommunityCount} schemes qualify with direct benefits
+                {userCommunityCount} {getUIText('schemesQualifyDirect', selectedLanguage)}
               </span>
             </div>
           </div>
@@ -232,14 +252,14 @@ export const SchemesTab: React.FC = () => {
           {selectedCaste !== userCaste ? (
             <button
               onClick={() => setSelectedCaste(userCaste)}
-              className="text-[10px] font-bold bg-[#3159E8] hover:bg-[#24135F] text-white px-2.5 py-1.5 rounded-lg transition-all border border-[#62E6C8]/30 active:scale-95 shrink-0"
+              className="text-[10px] font-bold bg-[#3159E8] hover:bg-[#24135F] text-white px-2.5 py-1.5 rounded-lg transition-all border border-[#62E6C8]/30 active:scale-95 shrink-0 cursor-pointer"
             >
-              Reset to {userCaste}
+              {getUIText('resetToPrefix', selectedLanguage)} {userCaste}
             </button>
           ) : (
             <div className="flex items-center gap-1 text-[11px] font-bold text-[#62E6C8] bg-[#10152E]/60 px-2 py-1 rounded-lg border border-[#3159E8]/30">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Matched</span>
+              <span>{getUIText('matchedBadge', selectedLanguage)}</span>
             </div>
           )}
         </div>
@@ -250,14 +270,14 @@ export const SchemesTab: React.FC = () => {
         <div className="flex items-center justify-between mb-1.5">
           <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
             <Filter className="w-3 h-3 text-[#3159E8]" />
-            <span>Select Community / Caste Category</span>
+            <span>{getUIText('communityCategory', selectedLanguage)}</span>
           </label>
           {selectedCaste !== userCaste && (
             <button
               onClick={() => handleSetAsProfileCaste(selectedCaste)}
-              className="text-[10px] text-[#3159E8] font-bold hover:underline"
+              className="text-[10px] text-[#3159E8] font-bold hover:underline cursor-pointer"
             >
-              Set as my profile caste
+              {getUIText('setProfileCaste', selectedLanguage)}
             </button>
           )}
         </div>
@@ -277,10 +297,10 @@ export const SchemesTab: React.FC = () => {
                     : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300'
                 }`}
               >
-                <span>{caste === 'All' ? 'All Communities' : caste}</span>
+                <span>{caste === 'All' ? getUIText('allCommunities', selectedLanguage) : caste}</span>
                 {isUserProfileCaste && (
                   <span className={`text-[9px] px-1 py-0.2 rounded-full ${isSelected ? 'bg-white/20 text-[#62E6C8]' : 'bg-[#EEEAFE] text-[#3159E8]'}`}>
-                    You
+                    {getUIText('youLabel', selectedLanguage)}
                   </span>
                 )}
               </button>
@@ -297,7 +317,7 @@ export const SchemesTab: React.FC = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search solar, toolkits, loans, scholarships..."
+            placeholder={getUIText('searchSchemesPlaceholder', selectedLanguage)}
             className="w-full h-10 pl-10 pr-9 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-[#10152E] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#3159E8]"
           />
           {searchQuery && (
@@ -320,7 +340,7 @@ export const SchemesTab: React.FC = () => {
                 : 'hover:text-[#24135F]'
             }`}
           >
-            All Schemes ({filteredSchemes.length})
+            {getUIText('allSchemes', selectedLanguage)} ({filteredSchemes.length})
           </button>
 
           <button
@@ -332,7 +352,7 @@ export const SchemesTab: React.FC = () => {
             }`}
           >
             <Bookmark className="w-3 h-3 text-[#3159E8]" />
-            <span>Saved ({savedSchemeIds.length})</span>
+            <span>{getUIText('savedFilter', selectedLanguage)} ({savedSchemeIds.length})</span>
           </button>
 
           <button
@@ -344,7 +364,7 @@ export const SchemesTab: React.FC = () => {
             }`}
           >
             <CheckCircle2 className="w-3 h-3 text-[#13B8B2]" />
-            <span>Applied ({Object.keys(appliedSchemes).length})</span>
+            <span>{getUIText('appliedFilter', selectedLanguage)} ({Object.keys(appliedSchemes).length})</span>
           </button>
         </div>
       </div>
@@ -355,6 +375,13 @@ export const SchemesTab: React.FC = () => {
           {CATEGORIES.map((cat) => {
             const Icon = cat.icon;
             const isSelected = selectedCategory === cat.id;
+            const localizedCatName = 
+              cat.id === 'All' ? getUIText('allSchemes', selectedLanguage) :
+              cat.id === 'Skill Training' ? getUIText('freeSkilling', selectedLanguage) :
+              cat.id === 'Toolkits & Equipment' ? getUIText('toolkitsEquipment', selectedLanguage) :
+              cat.id === 'Subsidized Loans' ? getUIText('lowInterestLoans', selectedLanguage) :
+              cat.id === 'Scholarships & Stipends' ? getUIText('scholarshipsStipends', selectedLanguage) :
+              cat.id === 'Enterprise Grant' ? getUIText('enterpriseGrants', selectedLanguage) : cat.label;
 
             return (
               <button
@@ -367,7 +394,7 @@ export const SchemesTab: React.FC = () => {
                 }`}
               >
                 <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-[#62E6C8]' : 'text-[#3159E8]'}`} />
-                <span>{cat.label}</span>
+                <span>{localizedCatName}</span>
               </button>
             );
           })}
@@ -379,9 +406,9 @@ export const SchemesTab: React.FC = () => {
         {filteredSchemes.length === 0 ? (
           <div className="p-8 text-center bg-white rounded-2xl border border-slate-200 mt-2">
             <Landmark className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-            <h3 className="font-bold text-sm text-slate-700">No matching schemes found</h3>
+            <h3 className="font-bold text-sm text-slate-700">{getUIText('noMatchingSchemes', selectedLanguage)}</h3>
             <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
-              Try switching your category filter or community selection to see available benefits.
+              {getUIText('trySwitchingFilter', selectedLanguage)}
             </p>
             <button
               onClick={() => {
@@ -390,9 +417,9 @@ export const SchemesTab: React.FC = () => {
                 setSearchQuery('');
                 setViewFilter('all');
               }}
-              className="mt-3 px-4 py-2 rounded-xl bg-gradient-to-r from-[#24135F] via-[#3159E8] to-[#13B8B2] text-white text-xs font-bold"
+              className="mt-3 px-4 py-2 rounded-xl bg-gradient-to-r from-[#24135F] via-[#3159E8] to-[#13B8B2] text-white text-xs font-bold cursor-pointer"
             >
-              Show All Schemes
+              {getUIText('showAllSchemes', selectedLanguage)}
             </button>
           </div>
         ) : (
@@ -422,19 +449,19 @@ export const SchemesTab: React.FC = () => {
                   <div className="flex items-center gap-1.5 flex-wrap">
                     {/* Category pill */}
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#EEEAFE] text-[#24135F] border border-[#3159E8]/20">
-                      {scheme.category}
+                      {getLocalizedSchemeCategory(scheme.category, selectedLanguage)}
                     </span>
 
                     {/* Community Priority Tag */}
                     {isCommunityExclusive ? (
                       <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-[#E4FAF5] text-[#13B8B2] border border-[#13B8B2]/40 flex items-center gap-1">
                         <Sparkles className="w-2.5 h-2.5" />
-                        <span>Exclusive for {selectedCaste}</span>
+                        <span>{getUIText('exclusiveFor', selectedLanguage)} {selectedCaste}</span>
                       </span>
                     ) : (
                       <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
                         {scheme.applicableCastes.includes('All')
-                          ? 'All Social Categories'
+                          ? getUIText('allSocialCategories', selectedLanguage)
                           : scheme.applicableCastes.join(', ')}
                       </span>
                     )}
@@ -478,10 +505,10 @@ export const SchemesTab: React.FC = () => {
 
                 {/* Scheme Name & Ministry */}
                 <h3 className="font-extrabold text-base text-[#10152E] leading-snug">
-                  {scheme.name}
+                  {getLocalizedSchemeName(scheme, selectedLanguage)}
                 </h3>
                 <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-                  {scheme.ministry}
+                  {getLocalizedSchemeMinistry(scheme, selectedLanguage)}
                 </p>
 
                 {/* Financial Support / Benefit Highlight Box */}
@@ -491,10 +518,10 @@ export const SchemesTab: React.FC = () => {
                   </div>
                   <div className="flex-1">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-[#3159E8] block">
-                      Primary Benefit & Financial Support
+                      {getUIText('primaryBenefitTitle', selectedLanguage)}
                     </span>
                     <p className="text-xs font-bold text-[#10152E] mt-0.5 leading-snug">
-                      {scheme.primaryBenefit}
+                      {getLocalizedSchemeBenefit(scheme, selectedLanguage)}
                     </p>
                   </div>
                 </div>
@@ -503,35 +530,35 @@ export const SchemesTab: React.FC = () => {
                 {scheme.specialSubsidyForCommunity && (
                   <div className="mt-2 flex items-center gap-1.5 text-[11px] text-[#13B8B2] font-semibold bg-[#E4FAF5] px-2.5 py-1 rounded-lg border border-[#13B8B2]/30">
                     <Sparkles className="w-3 h-3 shrink-0 text-[#13B8B2]" />
-                    <span className="leading-tight">{scheme.specialSubsidyForCommunity}</span>
+                    <span className="leading-tight">{getLocalizedSchemeSubsidy(scheme, selectedLanguage)}</span>
                   </div>
                 )}
 
                 {/* Explainable Why This Scheme Is Shown */}
                 <div className="mt-2.5 bg-[#F6F8FC] rounded-xl p-2.5 border border-slate-200/60 text-[10.5px] space-y-1">
                   <span className="font-bold text-slate-700 block uppercase text-[9px] tracking-wider">
-                    Why this scheme is shown:
+                    {getUIText('whyMatchedTitle', selectedLanguage)}:
                   </span>
                   <p className="text-slate-600 leading-tight">
-                    ✓ Matches {selectedCaste} beneficiary priority criteria
+                    ✓ {getUIText('matchesBeneficiaryPriority', selectedLanguage)}: {selectedCaste}
                   </p>
                   <p className="text-slate-600 leading-tight">
-                    ✓ Aligned with target trade: {careerGoal || profile.currentJob || 'Solar / Technical Skills'}
+                    ✓ {getUIText('alignedTargetTrade', selectedLanguage)}: {getLocalizedJob(careerGoal || profile.currentJob || 'Solar / Technical Skills', selectedLanguage)}
                   </p>
                   <p className="text-slate-500 text-[9.5px] italic pt-0.5">
-                    * Preliminary eligibility — verify on official portal
+                    * {getUIText('preliminaryEligibility', selectedLanguage)}
                   </p>
                 </div>
 
                 {/* Quick Eligibility Badges */}
                 <div className="mt-2.5 pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
                   <div className="flex items-center gap-2 text-slate-500 text-[11px]">
-                    <span className="font-semibold text-slate-700">Income Limit:</span>
-                    <span>{scheme.eligibility.maxFamilyIncome || 'None'}</span>
+                    <span className="font-semibold text-slate-700">{getUIText('incomeLimitLabel', selectedLanguage)}:</span>
+                    <span>{scheme.eligibility.maxFamilyIncome || getUIText('noneSpecified', selectedLanguage)}</span>
                   </div>
 
                   <div className="flex items-center gap-2 text-slate-500 text-[11px]">
-                    <span className="font-semibold text-slate-700">Age:</span>
+                    <span className="font-semibold text-slate-700">{getUIText('agePrefix', selectedLanguage)}:</span>
                     <span>{scheme.eligibility.ageRange || '18+'}</span>
                   </div>
                 </div>
@@ -543,7 +570,7 @@ export const SchemesTab: React.FC = () => {
                     className="flex-1 py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#10152E] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Info className="w-3.5 h-3.5 text-slate-500" />
-                    <span>View Eligibility</span>
+                    <span>{getUIText('viewDetailsBtn', selectedLanguage)}</span>
                   </button>
 
                   <button
@@ -557,11 +584,11 @@ export const SchemesTab: React.FC = () => {
                     {appliedInfo ? (
                       <>
                         <CheckCircle2 className="w-3.5 h-3.5 text-[#13B8B2]" />
-                        <span>Track Status</span>
+                        <span>{getUIText('statusNav', selectedLanguage)}</span>
                       </>
                     ) : (
                       <>
-                        <span>Apply Online</span>
+                        <span>{getUIText('applySchemeBtn', selectedLanguage)}</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </>
                     )}
@@ -587,7 +614,7 @@ export const SchemesTab: React.FC = () => {
               <div className="bg-gradient-to-br from-[#10152E] via-[#24135F] to-[#10152E] text-white p-5 relative shrink-0">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#62E6C8] bg-[#24135F] px-2.5 py-0.5 rounded-full border border-[#3159E8]/40">
-                    {selectedSchemeForModal.category}
+                    {getLocalizedSchemeCategory(selectedSchemeForModal.category, selectedLanguage)}
                   </span>
 
                   <button
@@ -599,10 +626,10 @@ export const SchemesTab: React.FC = () => {
                 </div>
 
                 <h2 className="text-lg font-black leading-snug">
-                  {selectedSchemeForModal.name}
+                  {getLocalizedSchemeName(selectedSchemeForModal, selectedLanguage)}
                 </h2>
                 <p className="text-xs text-slate-300 mt-0.5">
-                  {selectedSchemeForModal.ministry}
+                  {getLocalizedSchemeMinistry(selectedSchemeForModal, selectedLanguage)}
                 </p>
               </div>
 
@@ -612,10 +639,10 @@ export const SchemesTab: React.FC = () => {
                 {/* Description */}
                 <div>
                   <h4 className="font-extrabold text-slate-900 uppercase tracking-wider text-[11px] mb-1">
-                    Scheme Overview
+                    {getUIText('schemeOverview', selectedLanguage)}
                   </h4>
                   <p className="leading-relaxed text-slate-600">
-                    {selectedSchemeForModal.description}
+                    {getLocalizedSchemeDescription(selectedSchemeForModal, selectedLanguage)}
                   </p>
                 </div>
 
@@ -623,38 +650,38 @@ export const SchemesTab: React.FC = () => {
                 <div className="bg-[#EEEAFE]/60 p-3.5 rounded-2xl border border-[#3159E8]/20">
                   <h4 className="font-extrabold text-[#24135F] uppercase tracking-wider text-[11px] mb-2 flex items-center gap-1.5">
                     <UserCheck className="w-4 h-4 text-[#3159E8]" />
-                    <span>Your Profile Match Check</span>
+                    <span>{getUIText('profileMatchCheck', selectedLanguage)}</span>
                   </h4>
                   <div className="flex flex-col gap-1.5">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-600">Community Category:</span>
+                      <span className="text-slate-600">{getUIText('communityCategoryLabel', selectedLanguage)}:</span>
                       <span className="font-bold text-[#10152E] flex items-center gap-1">
                         <Check className="w-3.5 h-3.5 text-emerald-600" />
-                        {userCaste} (Eligible)
+                        {userCaste} ({getUIText('eligibleStatus', selectedLanguage)})
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-600">Family Income Range:</span>
+                      <span className="text-slate-600">{getUIText('familyIncomeRange', selectedLanguage)}:</span>
                       <span className="font-bold text-[#10152E] flex items-center gap-1">
                         <Check className="w-3.5 h-3.5 text-emerald-600" />
-                        {profile.familyIncome || '₹10k–₹20k'} (Within ceiling)
+                        {getLocalizedIncome(profile.familyIncome || '₹10k–₹20k', selectedLanguage)} ({getUIText('withinCeiling', selectedLanguage)})
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-600">Age:</span>
+                      <span className="text-slate-600">{getUIText('ageYearsLabel', selectedLanguage)}:</span>
                       <span className="font-bold text-[#10152E] flex items-center gap-1">
                         <Check className="w-3.5 h-3.5 text-emerald-600" />
-                        {profile.age || '19'} yrs (Eligible)
+                        {profile.age || '19'} {getUIText('yearsSuffix', selectedLanguage)} ({getUIText('eligibleStatus', selectedLanguage)})
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-600">Trade Alignment:</span>
+                      <span className="text-slate-600">{getUIText('tradeAlignment', selectedLanguage)}:</span>
                       <span className="font-bold text-[#10152E] flex items-center gap-1">
                         <Check className="w-3.5 h-3.5 text-emerald-600" />
-                        {profile.currentJob || 'Electrical Assistant'}
+                        {getLocalizedJob(profile.currentJob || 'Electrical Assistant', selectedLanguage)}
                       </span>
                     </div>
                   </div>
@@ -664,7 +691,7 @@ export const SchemesTab: React.FC = () => {
                 <div>
                   <h4 className="font-extrabold text-slate-900 uppercase tracking-wider text-[11px] mb-2 flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-[#13B8B2]" />
-                    <span>Entitlements & Benefits You Receive</span>
+                    <span>{getUIText('entitlementsBenefits', selectedLanguage)}</span>
                   </h4>
                   <ul className="flex flex-col gap-2">
                     {selectedSchemeForModal.benefitsList.map((benefit, i) => (
@@ -680,7 +707,7 @@ export const SchemesTab: React.FC = () => {
                 <div>
                   <h4 className="font-extrabold text-slate-900 uppercase tracking-wider text-[11px] mb-2 flex items-center gap-1.5">
                     <FileText className="w-3.5 h-3.5 text-[#3159E8]" />
-                    <span>Mandatory Verification Documents</span>
+                    <span>{getUIText('mandatoryDocuments', selectedLanguage)}</span>
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {selectedSchemeForModal.documentsRequired.map((doc, idx) => (
@@ -698,7 +725,7 @@ export const SchemesTab: React.FC = () => {
                 <div className="bg-[#E4FAF5]/60 p-3 rounded-2xl border border-[#13B8B2]/30 flex items-center justify-between text-xs">
                   <div>
                     <span className="text-[10px] font-bold uppercase tracking-wider text-[#13B8B2] block">
-                      Official Government Portal
+                      {getUIText('officialGovPortal', selectedLanguage)}
                     </span>
                     <a
                       href={selectedSchemeForModal.portalUrl}
@@ -713,7 +740,7 @@ export const SchemesTab: React.FC = () => {
 
                   <div className="text-right">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
-                      Toll-Free Helpline
+                      {getUIText('tollFreeHelpline', selectedLanguage)}
                     </span>
                     <span className="font-bold text-[#10152E]">
                       {selectedSchemeForModal.helpline}
@@ -727,16 +754,16 @@ export const SchemesTab: React.FC = () => {
               <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center gap-3 shrink-0">
                 <button
                   onClick={() => setSelectedSchemeForModal(null)}
-                  className="px-4 py-2.5 rounded-xl border border-slate-300 font-bold text-xs text-slate-600 hover:bg-slate-100"
+                  className="px-4 py-2.5 rounded-xl border border-slate-300 font-bold text-xs text-slate-600 hover:bg-slate-100 cursor-pointer"
                 >
-                  Close
+                  {getUIText('closeBtn', selectedLanguage)}
                 </button>
 
                 <button
                   onClick={() => handleStartApply(selectedSchemeForModal)}
                   className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#24135F] via-[#3159E8] to-[#13B8B2] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-[#3159E8]/30 active:scale-95 cursor-pointer"
                 >
-                  <span>Apply with Pre-Filled Profile</span>
+                  <span>{getUIText('applyPreFilledProfile', selectedLanguage)}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -759,19 +786,19 @@ export const SchemesTab: React.FC = () => {
               <div className="bg-gradient-to-r from-[#24135F] via-[#3159E8] to-[#13B8B2] text-white p-5 relative shrink-0">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-[10px] font-bold text-[#62E6C8] uppercase tracking-wider">
-                    Step {applyStep} of 4 • Skill Bridge JanSamarth Link
+                    {getUIText('stepLabel', selectedLanguage)} {applyStep} {getUIText('stepOf', selectedLanguage)} 4 • Skill Bridge JanSamarth Link
                   </span>
 
                   <button
                     onClick={() => setActiveApplyingScheme(null)}
-                    className="p-1 rounded-full bg-white/10 hover:bg-white/20 text-white"
+                    className="p-1 rounded-full bg-white/10 hover:bg-white/20 text-white cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
 
                 <h3 className="font-extrabold text-base">
-                  Apply for {activeApplyingScheme.name}
+                  {getUIText('btnApply', selectedLanguage)}: {activeApplyingScheme.name}
                 </h3>
               </div>
 
@@ -791,35 +818,35 @@ export const SchemesTab: React.FC = () => {
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center gap-2 text-slate-900 font-extrabold text-sm mb-1">
                       <UserCheck className="w-4 h-4 text-[#3159E8]" />
-                      <span>Step 1: Verify Your Pre-Filled Details</span>
+                      <span>{getUIText('step1VerifyDetails', selectedLanguage)}</span>
                     </div>
                     <p className="text-slate-500 text-xs">
-                      Skill Bridge has pre-filled your application using your verified citizen profile.
+                      {getUIText('preFilledDesc', selectedLanguage)}
                     </p>
 
                     <div className="grid grid-cols-2 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
                       <div className="min-w-0">
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">Full Name</span>
-                        <span className="font-bold text-[#10152E] text-xs break-words">{profile.name || 'Candidate'}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">{getUIText('fullNameLabel', selectedLanguage)}</span>
+                        <span className="font-bold text-[#10152E] text-xs break-words">{profile.name || getUIText('candidateFallback', selectedLanguage)}</span>
                       </div>
                       <div className="min-w-0">
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">Mobile (Aadhaar linked)</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">{getUIText('mobileAadhaarLinked', selectedLanguage)}</span>
                         <span className="font-bold text-[#10152E] text-xs break-words">+91 98765 43210</span>
                       </div>
                       <div className="min-w-0">
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">Caste / Community</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">{getUIText('casteCommunityLabel', selectedLanguage)}</span>
                         <span className="font-bold text-[#13B8B2] text-xs bg-[#E4FAF5] px-2 py-0.5 rounded-full inline-block border border-[#13B8B2]/30 break-words">
                           {userCaste}
                         </span>
                       </div>
                       <div className="min-w-0">
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">Annual Family Income</span>
-                        <span className="font-bold text-[#10152E] text-xs break-words">{profile.familyIncome || '₹10k–₹20k'}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">{getUIText('annualFamilyIncome', selectedLanguage)}</span>
+                        <span className="font-bold text-[#10152E] text-xs break-words">{getLocalizedIncome(profile.familyIncome || '₹10k–₹20k', selectedLanguage)}</span>
                       </div>
                       <div className="col-span-2 pt-2 border-t border-slate-200 min-w-0">
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">Trade / Vocation</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">{getUIText('tradeVocation', selectedLanguage)}</span>
                         <span className="font-bold text-[#10152E] text-xs break-words">
-                          {profile.currentJob || 'Electrical Assistant'}
+                          {getLocalizedJob(profile.currentJob || 'Electrical Assistant', selectedLanguage)}
                         </span>
                       </div>
                     </div>
@@ -827,7 +854,7 @@ export const SchemesTab: React.FC = () => {
                     <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-2 text-amber-800 text-[11px]">
                       <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                       <span>
-                        Your {userCaste} caste status qualifies you for subsidized fee exemption and direct DBT benefits under this scheme.
+                        {getUIText('casteSubsidizedDbtNote', selectedLanguage)}
                       </span>
                     </div>
                   </div>
@@ -838,10 +865,10 @@ export const SchemesTab: React.FC = () => {
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center gap-2 text-slate-900 font-extrabold text-sm mb-1">
                       <FileText className="w-4 h-4 text-[#3159E8]" />
-                      <span>Step 2: Digital Document e-KYC Readiness</span>
+                      <span>{getUIText('step2Ekyc', selectedLanguage)}</span>
                     </div>
                     <p className="text-slate-500 text-xs">
-                      Confirm you have the following documents ready for automated DigiLocker verification:
+                      {getUIText('confirmDocsReady', selectedLanguage)}
                     </p>
 
                     <div className="flex flex-col gap-2">
@@ -854,7 +881,7 @@ export const SchemesTab: React.FC = () => {
                           />
                           <div className="flex-1">
                             <span className="font-bold text-[#10152E] text-xs block">{doc}</span>
-                            <span className="text-[10px] text-slate-400">Available via DigiLocker / Aadhaar Seeding</span>
+                            <span className="text-[10px] text-slate-400">{getUIText('digiLockerAvailable', selectedLanguage)}</span>
                           </div>
                           <Check className="w-4 h-4 text-emerald-600 shrink-0" />
                         </label>
@@ -868,27 +895,27 @@ export const SchemesTab: React.FC = () => {
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center gap-2 text-slate-900 font-extrabold text-sm mb-1">
                       <Building2 className="w-4 h-4 text-[#3159E8]" />
-                      <span>Step 3: Direct Benefit Transfer (DBT) Account</span>
+                      <span>{getUIText('step3Dbt', selectedLanguage)}</span>
                     </div>
 
                     <div className="bg-[#E4FAF5]/70 p-4 rounded-2xl border border-[#13B8B2]/30 flex flex-col gap-2">
                       <div className="flex items-center gap-2 text-[#13B8B2] font-bold text-xs">
                         <CheckCircle2 className="w-4 h-4" />
-                        <span>Aadhaar Seeding Active</span>
+                        <span>{getUIText('aadhaarSeedingActive', selectedLanguage)}</span>
                       </div>
                       <p className="text-slate-600 text-[11px] leading-relaxed">
-                        Any stipend or toolkit subsidy voucher will be transferred directly to your bank account via PFMS (Public Financial Management System).
+                        {getUIText('pfmsDesc', selectedLanguage)}
                       </p>
                       <div className="bg-white p-2.5 rounded-xl border border-[#13B8B2]/20 text-[11px] text-slate-700">
-                        <span className="text-slate-400 block text-[10px]">Bank Linked:</span>
-                        <span className="font-bold">State Bank of India • A/C ending in 4920</span>
+                        <span className="text-slate-400 block text-[10px]">{getUIText('bankLinkedLabel', selectedLanguage)}:</span>
+                        <span className="font-bold">{getUIText('sampleBankDetails', selectedLanguage)}</span>
                       </div>
                     </div>
 
                     <label className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
-                      <input type="checkbox" defaultChecked className="w-4 h-4 accent-[#3159E8] mt-0.5" />
+                      <input type="checkbox" defaultChecked className="w-4 h-4 accent-[#3159E8] mt-0.5 cursor-pointer" />
                       <span className="text-[11px] text-slate-600 leading-snug">
-                        I hereby declare that the information provided is correct to the best of my knowledge and grant consent to verify my {userCaste} category details with the national registry.
+                        {getUIText('consentDeclaration', selectedLanguage)}
                       </span>
                     </label>
                   </div>
@@ -902,36 +929,36 @@ export const SchemesTab: React.FC = () => {
                     </div>
 
                     <h4 className="font-black text-lg text-[#10152E]">
-                      Application Submitted!
+                      {getUIText('applicationSubmittedTitle', selectedLanguage)}
                     </h4>
                     <p className="text-xs text-slate-500 mt-1 max-w-xs">
-                      Your application has been routed to the {activeApplyingScheme.ministry}.
+                      {getUIText('applicationRoutedTo', selectedLanguage)} {activeApplyingScheme.ministry}.
                     </p>
 
                     <div className="my-4 w-full bg-[#EEEAFE] p-4 rounded-2xl border border-[#3159E8]/30 flex flex-col gap-1 text-center">
                       <span className="text-[10px] uppercase font-bold text-[#3159E8] tracking-wider">
-                        Official Acknowledgement Number
+                        {getUIText('officialAckNum', selectedLanguage)}
                       </span>
                       <span className="font-mono font-black text-base text-[#24135F]">
                         {appliedSchemes[activeApplyingScheme.id]?.refId || 'SB-OBC-748291'}
                       </span>
                       <span className="text-[10px] text-slate-500">
-                        SMS confirmation dispatched to +91 98765 43210
+                        {getUIText('smsDispatchedTo', selectedLanguage)} +91 98765 43210
                       </span>
                     </div>
 
                     <div className="w-full text-left bg-slate-50 p-3 rounded-xl border border-slate-200 text-[11px] text-slate-600 flex flex-col gap-1">
                       <div className="flex justify-between">
-                        <span>Status:</span>
-                        <span className="font-bold text-amber-600">Pending Verification</span>
+                        <span>{getUIText('statusPrefix', selectedLanguage)}:</span>
+                        <span className="font-bold text-amber-600">{getUIText('pendingVerification', selectedLanguage)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Community Quota:</span>
-                        <span className="font-bold text-[#10152E]">{userCaste} Category</span>
+                        <span>{getUIText('communityQuota', selectedLanguage)}:</span>
+                        <span className="font-bold text-[#10152E]">{userCaste} {getUIText('categorySuffix', selectedLanguage)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Expected Approval:</span>
-                        <span className="font-bold text-[#10152E]">3-5 Business Days</span>
+                        <span>{getUIText('expectedApproval', selectedLanguage)}:</span>
+                        <span className="font-bold text-[#10152E]">{getUIText('businessDays35', selectedLanguage)}</span>
                       </div>
                     </div>
                   </div>
@@ -948,9 +975,9 @@ export const SchemesTab: React.FC = () => {
                         if (applyStep === 1) setActiveApplyingScheme(null);
                         else setApplyStep(prev => prev - 1);
                       }}
-                      className="px-4 py-2.5 rounded-xl border border-slate-300 font-bold text-xs text-slate-600 hover:bg-slate-100"
+                      className="px-4 py-2.5 rounded-xl border border-slate-300 font-bold text-xs text-slate-600 hover:bg-slate-100 cursor-pointer"
                     >
-                      {applyStep === 1 ? 'Cancel' : 'Back'}
+                      {applyStep === 1 ? getUIText('cancelBtn', selectedLanguage) : getUIText('backBtn', selectedLanguage)}
                     </button>
 
                     <button
@@ -960,16 +987,16 @@ export const SchemesTab: React.FC = () => {
                       }}
                       className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#24135F] via-[#3159E8] to-[#13B8B2] text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-[#3159E8]/30 active:scale-95 cursor-pointer"
                     >
-                      <span>{applyStep === 3 ? 'Confirm & Submit Application' : 'Continue'}</span>
+                      <span>{applyStep === 3 ? getUIText('confirmSubmitApp', selectedLanguage) : getUIText('continueButton', selectedLanguage)}</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   </>
                 ) : (
                   <button
                     onClick={() => setActiveApplyingScheme(null)}
-                    className="w-full py-2.5 rounded-xl bg-[#24135F] text-white font-bold text-xs hover:bg-[#10152E] transition-colors"
+                    className="w-full py-2.5 rounded-xl bg-[#24135F] text-white font-bold text-xs hover:bg-[#10152E] transition-colors cursor-pointer"
                   >
-                    Done & Return to Schemes
+                    {getUIText('doneReturnToSchemes', selectedLanguage)}
                   </button>
                 )}
               </div>
