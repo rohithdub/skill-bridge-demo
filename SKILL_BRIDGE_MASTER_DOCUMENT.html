@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skill Bridge — Master Architectural & Feature Document</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #10152E;
+      --brand-purple: #24135F;
+      --brand-blue: #3159E8;
+      --brand-teal: #13B8B2;
+      --brand-mint: #62E6C8;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --bg-light: #f8fafc;
+      --border-color: #e2e8f0;
+      --card-bg: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: var(--text-main);
+      background-color: var(--bg-light);
+      line-height: 1.65;
+      font-size: 15px;
+    }
+
+    /* Print & Export Bar */
+    .top-action-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(16, 21, 46, 0.95);
+      backdrop-filter: blur(12px);
+      color: white;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(49, 89, 232, 0.3);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .top-action-bar .brand-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+    }
+
+    .top-action-bar .brand-badge span {
+      background: linear-gradient(135deg, #fff, var(--brand-mint));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .btn-download {
+      background: linear-gradient(135deg, var(--brand-blue), var(--brand-teal));
+      color: white;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(49, 89, 232, 0.3);
+    }
+
+    .btn-download:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(49, 89, 232, 0.4);
+      opacity: 0.95;
+    }
+
+    .doc-container {
+      max-width: 920px;
+      margin: 40px auto;
+      background: var(--card-bg);
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+      padding: 56px 64px;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+      background: linear-gradient(135deg, var(--bg-dark), var(--brand-purple));
+      color: white;
+      padding: 44px;
+      border-radius: 16px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(49, 89, 232, 0.3);
+    }
+
+    .hero-banner::after {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, rgba(98, 230, 200, 0.25), transparent 70%);
+      border-radius: 50%;
+    }
+
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: rgba(49, 89, 232, 0.2);
+      border: 1px solid rgba(98, 230, 200, 0.4);
+      color: var(--brand-mint);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 34px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+
+    .hero-subtitle {
+      font-size: 17px;
+      color: #cbd5e1;
+      font-weight: 400;
+      max-width: 600px;
+      margin-bottom: 20px;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      padding-top: 20px;
+      font-size: 12px;
+    }
+
+    .meta-item .label {
+      color: #94a3b8;
+      text-transform: uppercase;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .meta-item .value {
+      color: #f8fafc;
+      font-weight: 600;
+      margin-top: 2px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Headings */
+    h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+      margin-top: 48px;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-top: 28px;
+      margin-bottom: 12px;
+    }
+
+    p {
+      margin-bottom: 16px;
+      color: #334155;
+    }
+
+    /* Lists */
+    ul, ol {
+      margin-bottom: 20px;
+      padding-left: 24px;
+      color: #334155;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    /* Code & Pre */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9em;
+      background: #f1f5f9;
+      color: var(--brand-purple);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+    }
+
+    pre {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 20px;
+      border-radius: 12px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+      border: 1px solid #1e293b;
+    }
+
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      border: none;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-bottom: 28px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      font-size: 13.5px;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #334155;
+      font-weight: 700;
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #334155;
+      vertical-align: top;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: #fcfdfe;
+    }
+
+    /* Callout Card */
+    .callout {
+      background: #eff6ff;
+      border-left: 4px solid var(--brand-blue);
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 24px;
+      font-size: 14px;
+      color: #1e3a8a;
+    }
+
+    .callout strong {
+      color: #1d4ed8;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    /* Print Stylesheet */
+    @media print {
+      .top-action-bar {
+        display: none !important;
+      }
+      body {
+        background: white;
+      }
+      .doc-container {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        max-width: 100%;
+      }
+      .hero-banner {
+        border: 1px solid #333;
+        background: #10152E !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      table, pre, blockquote {
+        page-break-inside: avoid;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .doc-container {
+        padding: 24px 20px;
+        margin: 16px;
+      }
+      .hero-banner {
+        padding: 24px;
+      }
+      h1 {
+        font-size: 26px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Floating Action Bar -->
+  <div class="top-action-bar">
+    <div class="brand-badge">
+      <svg width="24" height="24" viewBox="0 0 64 64" fill="none">
+        <path d="M8 44C16 26 48 26 56 44" stroke="#3159E8" stroke-width="6" stroke-linecap="round"/>
+        <path d="M16 44V34M28 44V29M36 44V29M48 44V34" stroke="#62E6C8" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="32" cy="19" r="5" fill="#62E6C8"/>
+      </svg>
+      <span>SKILL BRIDGE</span>
+      <span style="color: #64748b; font-weight: 500; font-size: 13px;">| Master Documentation</span>
+    </div>
+
+    <button class="btn-download" onclick="window.print()">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
+        <path d="M6 14h12v8H6z"/>
+      </svg>
+      <span>Save as PDF / Print</span>
+    </button>
+  </div>
+
+  <div class="doc-container">
+
+    <!-- Hero Header -->
+    <div class="hero-banner">
+      <div class="hero-pill">Smart India Hackathon (SIH) Prototype</div>
+      <h1>SKILL BRIDGE 🌉</h1>
+      <div class="hero-subtitle">
+        "An AI-Powered Cognitive Bridge to Empowerment"<br>
+        Comprehensive Master Architectural & Feature Document (A to Z)
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-item">
+          <div class="label">Repository</div>
+          <div class="value">rohithdub/skill-bridge-demo</div>
+        </div>
+        <div class="meta-item">
+          <div class="label">Version</div>
+          <div class="value">v1.0 Production Prototype</div>
+        </div>
+        <div class="meta-item">
+          <div class="label">Architecture</div>
+          <div class="value">Next.js 15+ / React 19</div>
+        </div>
+        <div class="meta-item">
+          <div class="label">Primary User</div>
+          <div class="value">Underserved Indian Citizens</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 1 -->
+    <h2>1. Executive Summary & Core Mission</h2>
+    <p>
+      <strong>Skill Bridge</strong> is an AI-powered conversational web application built for the <strong>Smart India Hackathon (SIH)</strong>. Its mission is to empower underserved youth, informal sector workers, rural artisans, and low-literacy citizens across India to transition from low-income, vulnerable occupations into skilled, high-growth, government-certified career pathways.
+    </p>
+    <p>
+      Unlike traditional career portals that assume high literacy, CV-writing skills, or English proficiency, Skill Bridge operates on a <strong>Voice-First, Vernacular-First, and Cognitive-Bridge architecture</strong>. It listens to a citizen's voice in their mother tongue, understands their traditional family craft and current job, isolates their implicit <strong>transferable skills</strong>, bridges them into formal accredited certifications (aligned with <strong>NSDC, PMKVY 4.0, PM Vishwakarma, and Skill India</strong>), and unlocks direct financial benefits and government subsidies.
+    </p>
+
+    <pre><code>       [ Citizen Voice in Native Language ]
+                       │
+                       ▼
+      [ 10-Question Conversational Onboarding ]
+                       │
+                       ▼
+       [ Cognitive Bridge Reasoning Engine ]
+    (Extracts Transferable Skills from Current Job)
+                       │
+         ┌─────────────┴─────────────┐
+         ▼                           ▼
+[ 5-Stage Certified Roadmap ]   [ Community-Tailored Govt Schemes ]
+ (Foundation → Lab → Placement)  (Toolkits, Grants, 5% Loans, DBT)
+         │                           │
+         └─────────────┬─────────────┘
+                       ▼
+       [ Citizen Serial ID & Admin Dossier ]</code></pre>
+
+    <!-- Section 2 -->
+    <h2>2. Target Demographics & Grassroots Problem Solved</h2>
+    <div class="callout">
+      <strong>The Grassroots Problem:</strong>
+      Conventional skilling programs treat candidates as complete novices, ignoring years of practical, real-world experience (e.g., an electrician's assistant already knows AC circuits, tools, and site safety, but lacks formal DC solar photovoltaic knowledge). Furthermore, linguistic barriers and scheme fragmentation keep citizens from accessing billions of rupees in government grants, toolkits, and low-interest credit.
+    </div>
+
+    <ul>
+      <li><strong>Cognitive Bridge Intelligence:</strong> Re-values generational or informal labor, demonstrating that citizens already possess 30%–50% of the skills required for their target role.</li>
+      <li><strong>Multilingual Voice Onboarding:</strong> Complete voice-driven interaction in 13 Indian languages.</li>
+      <li><strong>Automated Scheme Matching:</strong> Matches candidates with exact central schemes based on their trade, family income, and social category (OBC, SC, ST, EWS, General).</li>
+      <li><strong>Supervisor Admin Dashboard:</strong> Centralized digital dossier providing live batch tracking, serial ID lookup, and instant CSV reporting.</li>
+    </ul>
+
+    <!-- Section 3 -->
+    <h2>3. Core Architectural Philosophy</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Principle</th>
+          <th>Implementation Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Voice-First & Multimodal</strong></td>
+          <td>Integrated Web Speech API (<code>SpeechRecognition</code> & <code>SpeechSynthesis</code>) with server-side proxy (<code>/api/tts</code>) fetching authentic native Indian language audio. Interactive visual fallback chips for silent environments.</td>
+        </tr>
+        <tr>
+          <td><strong>Cognitive Bridging</strong></td>
+          <td>Explicit AI logic connecting prior experience (e.g., <em>Construction Worker → Licensed Electrician</em>, <em>Driver → Logistics Fleet Coordinator</em>, <em>Farmer → Agri-Tech Drone Pilot</em>).</td>
+        </tr>
+        <tr>
+          <td><strong>Zero Authentication Friction</strong></td>
+          <td>Instant access with a 10-digit mobile number and automated 4-digit OTP verification simulation (<code>4-8-2-9</code>). No password fatigue or SMS delays during presentations.</td>
+        </tr>
+        <tr>
+          <td><strong>Standardized Citizen Serial ID</strong></td>
+          <td>Unique state-district-serial identification format (e.g., <code>TN-32-101</code>) assigned to every citizen profile for instant institutional lookup.</td>
+        </tr>
+        <tr>
+          <td><strong>Persistent Local State</strong></td>
+          <td>Client-side reactive store backed by browser <code>localStorage</code> (<code>skill_bridge_state_v1</code> and <code>skillbridge_admin_learners_v4</code>). Zero database dependency required for hackathon demos.</td>
+        </tr>
+        <tr>
+          <td><strong>Dual-Chassis Layout</strong></td>
+          <td>Renders as an iPhone-style centered frame on desktops and a native smartphone container on mobile devices, with an expandable wide institutional view for the Admin Portal.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Section 4 -->
+    <h2>4. Complete Technology Stack</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>Technology</th>
+          <th>Purpose & Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Framework</strong></td>
+          <td><strong>Next.js 15+ / React 19</strong></td>
+          <td>App Router, server-rendered layouts, dynamic client components.</td>
+        </tr>
+        <tr>
+          <td><strong>Language</strong></td>
+          <td><strong>TypeScript</strong></td>
+          <td>Strict types for <code>UserProfile</code>, <code>GovtScheme</code>, <code>GeneratedRoadmap</code>, <code>LearnerAdminRecord</code>.</td>
+        </tr>
+        <tr>
+          <td><strong>Styling</strong></td>
+          <td><strong>Tailwind CSS & PostCSS</strong></td>
+          <td>Design tokens: <code>#10152E</code> (Dark), <code>#24135F</code> (Purple), <code>#3159E8</code> (Blue), <code>#62E6C8</code> (Mint).</td>
+        </tr>
+        <tr>
+          <td><strong>Animations</strong></td>
+          <td><strong>Framer Motion</strong></td>
+          <td>Stage animations (<code>AnimatePresence</code>), sliding drawers, pulsing waveform bars.</td>
+        </tr>
+        <tr>
+          <td><strong>Gamification</strong></td>
+          <td><strong>Canvas Confetti</strong></td>
+          <td>Celebration confetti on completing roadmap steps or applying for government schemes.</td>
+        </tr>
+        <tr>
+          <td><strong>TTS Engine</strong></td>
+          <td><strong>Dual Speech Pipeline</strong></td>
+          <td>Server-side Google Translate TTS proxy with chunking + browser Web Speech fallback + Web Audio API harmonic chimes.</td>
+        </tr>
+        <tr>
+          <td><strong>STT Engine</strong></td>
+          <td><strong>Web Speech API</strong></td>
+          <td><code>webkitSpeechRecognition</code> with BCP-47 language codes (<code>ta-IN</code>, <code>hi-IN</code>, <code>te-IN</code>, etc.).</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Section 5 -->
+    <h2>5. The 10 Guided Onboarding Questions</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Spoken Prompt (English)</th>
+          <th>Input Type</th>
+          <th>Options / Chips</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>name</code></td>
+          <td>"What is your name?"</td>
+          <td>Voice / Text</td>
+          <td>Sample: <code>Rohith Kumar</code></td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>age</code></td>
+          <td>"How old are you?"</td>
+          <td>Number / Chips</td>
+          <td><code>18</code>, <code>19</code>, <code>21</code>, <code>24</code>, <code>28</code>, <code>35+</code></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>currentJob</code></td>
+          <td>"What work or job are you currently doing?"</td>
+          <td>Single Choice</td>
+          <td>Electrical Assistant, Farmer, Construction worker, Student, Shop worker, Driver, Electrician, Tailor, No job</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>familyJob</code></td>
+          <td>"What is your family's traditional occupation?"</td>
+          <td>Single Choice</td>
+          <td>Farming, Weaving, Fishing, Handicrafts, Construction, Small business, Other</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>education</code></td>
+          <td>"What is your highest level of education?"</td>
+          <td>Single Choice</td>
+          <td>No formal education, 10th, 12th, ITI, Diploma, Undergraduate, Postgraduate</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>familyIncome</code></td>
+          <td>"What is your approximate monthly family income?"</td>
+          <td>Single Choice</td>
+          <td>Below ₹10,000, ₹10k–₹20k, ₹20k–₹30k, ₹30k–₹50k, Above ₹50,000</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>caste</code></td>
+          <td>"What is your caste category or community?"</td>
+          <td>Single Choice</td>
+          <td>General, OBC, SC, ST, EWS, Prefer not to say</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><code>skills</code></td>
+          <td>"What skills do you have or want to learn?"</td>
+          <td>Multi-Choice Chips</td>
+          <td>Electrical work, Technology, Driving, Farming, Cooking, Tailoring, Mechanics, Business, Teaching, Design</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td><code>physicalLimitation</code></td>
+          <td>"Do you have any physical disability or limitation?"</td>
+          <td>Special Toggle</td>
+          <td>No, Yes, Prefer not to say (+ details text if Yes)</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td><code>employmentPreference</code></td>
+          <td>"Are you interested in self-employment or wage employment?"</td>
+          <td>Single Choice</td>
+          <td>Self-employment (Own business), Wage employment (Job), Both, Not sure</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Section 6 -->
+    <h2>6. Sovereign Government Schemes Directory (15 Integrated Schemes)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Scheme Name</th>
+          <th>Ministry</th>
+          <th>Category</th>
+          <th>Primary Benefit</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>PM Vishwakarma Scheme</strong></td>
+          <td>MSME & Skill Dev</td>
+          <td>Toolkits & Equipment</td>
+          <td>₹15,000 Free Toolkit e-voucher + 5% Subsidized Loan up to ₹3 Lakhs</td>
+        </tr>
+        <tr>
+          <td><strong>NBCFDC Skilling & Loans</strong></td>
+          <td>Social Justice</td>
+          <td>Subsidized Loans</td>
+          <td>100% Free NSQF Skilling + ₹1,500/mo stipend + 3%-6% term loans</td>
+        </tr>
+        <tr>
+          <td><strong>PM-YASASVI</strong></td>
+          <td>Social Justice</td>
+          <td>Scholarships</td>
+          <td>₹75,000 to ₹1,25,000/yr Direct Bank Transfer (DBT) for technical diplomas</td>
+        </tr>
+        <tr>
+          <td><strong>NSFDC Hunar Vikas</strong></td>
+          <td>Social Justice</td>
+          <td>Skill Training</td>
+          <td>100% Free high-tech skilling + ₹1,500/mo stipend for SC youth</td>
+        </tr>
+        <tr>
+          <td><strong>Post-Matric SC Scholarship</strong></td>
+          <td>Social Justice</td>
+          <td>Scholarships</td>
+          <td>100% tuition waiver + ₹13,500/yr annual living maintenance</td>
+        </tr>
+        <tr>
+          <td><strong>PM-AJAY</strong></td>
+          <td>Social Justice</td>
+          <td>Enterprise Grant</td>
+          <td>Up to ₹50,000 capital grants for SC micro-business projects</td>
+        </tr>
+        <tr>
+          <td><strong>NSTFDC Adivasi Scheme</strong></td>
+          <td>Tribal Affairs</td>
+          <td>Subsidized Loans</td>
+          <td>Concessional credit at 2% to 4% p.a. for tribal enterprises</td>
+        </tr>
+        <tr>
+          <td><strong>Van Dhan Vikas Yojana</strong></td>
+          <td>Tribal Affairs</td>
+          <td>Toolkits</td>
+          <td>Tribal value-addition toolkits & SHG processing units</td>
+        </tr>
+        <tr>
+          <td><strong>CSIS Interest Subsidy</strong></td>
+          <td>Education</td>
+          <td>Scholarships</td>
+          <td>100% government interest waiver during moratorium for EWS youth</td>
+        </tr>
+        <tr>
+          <td><strong>PM Surya Ghar Muft Bijli</strong></td>
+          <td>New & Renewable Energy</td>
+          <td>Skill Training</td>
+          <td>Certified solar rooftop installer skilling + ₹78,000 consumer subsidy</td>
+        </tr>
+        <tr>
+          <td><strong>PMKVY 4.0 Short Term</strong></td>
+          <td>Skill Dev (MSDE)</td>
+          <td>Skill Training</td>
+          <td>100% free NSQF technical certification + ₹8,000 reward badge</td>
+        </tr>
+        <tr>
+          <td><strong>NAPS-2 Apprenticeship</strong></td>
+          <td>Skill Dev (MSDE)</td>
+          <td>Skill Training</td>
+          <td>Guaranteed ₹1,500/mo DBT stipend + formal industry placement</td>
+        </tr>
+        <tr>
+          <td><strong>Stand-Up India Scheme</strong></td>
+          <td>Finance</td>
+          <td>Subsidized Loans</td>
+          <td>Bank credit from ₹10 Lakhs to ₹1 Crore for SC, ST & Women entrepreneurs</td>
+        </tr>
+        <tr>
+          <td><strong>PMEGP</strong></td>
+          <td>MSME</td>
+          <td>Enterprise Grant</td>
+          <td>15% to 35% direct government capital subsidy on project cost</td>
+        </tr>
+        <tr>
+          <td><strong>PM Mudra Yojana (PMMY)</strong></td>
+          <td>Finance</td>
+          <td>Subsidized Loans</td>
+          <td>Shishu, Kishor, Tarun loans up to ₹10 Lakhs with zero collateral</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Section 7 -->
+    <h2>7. Supervisor Admin Dashboard Features</h2>
+    <ul>
+      <li><strong>Institutional Scale Metrics:</strong> Tracks 1,288+ candidates across aggregate batches with live metrics on active learners, certifications, and average completion rates.</li>
+      <li><strong>Citizen Serial ID Lookup:</strong> Real-time lookup for candidate identifiers (e.g. <code>TN-32-101</code>) with an instant elevated Dossier Card.</li>
+      <li><strong>Interactive Milestone Verification:</strong> Allows training officers to inspect and toggle individual roadmap step completions.</li>
+      <li><strong>Official CSV Export:</strong> One-click download of a standard spreadsheet containing all 13 candidate parameters for state and central government reporting.</li>
+      <li><strong>Simulated SMS Dispatch:</strong> Supervisors can send status updates and milestone nudges directly to the candidate's mobile number.</li>
+    </ul>
+
+    <!-- Section 8 -->
+    <h2>8. SIH Presentation Demo Ergonomics</h2>
+    <div class="callout">
+      <strong>Designed for Rapid Live Presentations:</strong>
+      The top persistent <code>DemoToolbar</code> includes a 1-click <strong>"Quick Demo"</strong> button that instantly pre-fills the profile of <em>Rohith Kumar</em> (19-year-old Electrical Assistant from Tamil Nadu, OBC, aiming for Solar Technician). It generates the 5-stage roadmap, syncs to the Admin Portal, and loads the active UI in under 500ms.
+    </div>
+
+    <hr style="margin: 40px 0; border: none; border-top: 1px solid #e2e8f0;">
+    <p style="text-align: center; color: #64748b; font-size: 13px;">
+      Built with ❤️ for the <strong>Smart India Hackathon (SIH)</strong> • Skill Bridge Team
+    </p>
+
+  </div>
+
+</body>
+</html>
